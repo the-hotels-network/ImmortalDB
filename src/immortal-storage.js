@@ -8,12 +8,18 @@ import {
 const FULFILLED = 'fulfilled';
 const REJECTED = 'rejected';
 
+const identity = (value) => value;
+
 export class ImmortalStorage {
     constructor(
         stores = DEFAULT_STORES,
         keyPrefix = DEFAULT_KEY_PREFIX,
         defaultValue = DEFAULT_VALUE,
+        encoder = identity,
+        decoder = identity,
     ) {
+        this.encoder = encoder || identity;
+        this.decoder = decoder || identity;
         this.defaultValue = defaultValue;
         this.keyPrefix = keyPrefix;
         this.stores = [];
@@ -49,7 +55,10 @@ export class ImmortalStorage {
         const prefixedKey = this.prefix(key);
 
         const results = await Promise.allSettled(
-            this.stores.map((store) => store.get(prefixedKey)),
+            this.stores.map((store) => (
+                store.get(prefixedKey)
+                    .then((value) => value && this.decoder(value))
+            )),
         );
 
         const values = results
@@ -86,9 +95,10 @@ export class ImmortalStorage {
         await this.onReady;
 
         const prefixedKey = this.prefix(key);
+        const encodedValue = await Promise.resolve(this.encoder(value));
 
         const results = await Promise.allSettled(
-            this.stores.map((store) => store.set(prefixedKey, value)),
+            this.stores.map((store) => store.set(prefixedKey, encodedValue)),
         );
 
         const rejections = results

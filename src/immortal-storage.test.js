@@ -63,6 +63,30 @@ describe('get()', () => {
         await expect(immortal.get(key, 'foo')).resolves.toBe('foo');
         expect(spy).not.toHaveBeenCalled();
     });
+    test('should decode the value with the given decoder', async () => {
+        expect.assertions(2);
+        const encoder = btoa;
+        const decoder = atob;
+        const encodedValue = encoder(correctValue);
+        const store = goodStoreFactory(encodedValue);
+        const storeSpy = jest.spyOn(store, 'set');
+        const immortal = new ImmortalStorage([store], '', undefined, encoder, decoder);
+        await immortal.set(key, correctValue);
+        expect(storeSpy).toHaveBeenCalledWith(key, encodedValue);
+        await expect(immortal.get(key)).resolves.toBe(correctValue);
+    });
+    test('should decode the value with the given decoder (async)', async () => {
+        expect.assertions(2);
+        const encoder = (value) => Promise.resolve(btoa(value));
+        const decoder = (value) => Promise.resolve(atob(value));
+        const encodedValue = await encoder(correctValue);
+        const store = goodStoreFactory(encodedValue);
+        const storeSpy = jest.spyOn(store, 'set');
+        const immortal = new ImmortalStorage([store], '', undefined, encoder, decoder);
+        await immortal.set(key, correctValue);
+        expect(storeSpy).toHaveBeenCalledWith(key, encodedValue);
+        await expect(immortal.get(key)).resolves.toBe(correctValue);
+    });
 });
 
 describe('set()', () => {
@@ -86,6 +110,28 @@ describe('set()', () => {
             badStoreFactory(correctValue),
         ]);
         await expect(immortal.set(key, correctValue)).rejects.toThrow('All');
+    });
+    test('should encode the value with the given encoder', async () => {
+        expect.assertions(1);
+        const encoder = btoa;
+        const decoder = atob;
+        const encodedValue = encoder(correctValue);
+        const store = goodStoreFactory(encodedValue);
+        const storeSpy = jest.spyOn(store, 'set');
+        const immortal = new ImmortalStorage([store], '', undefined, encoder, decoder);
+        await immortal.set(key, correctValue);
+        expect(storeSpy).toHaveBeenCalledWith(key, encodedValue);
+    });
+    test('should encode the value with the given encoder (async)', async () => {
+        expect.assertions(1);
+        const encoder = (value) => Promise.resolve(btoa(value));
+        const decoder = (value) => Promise.resolve(atob(value));
+        const encodedValue = await encoder(correctValue);
+        const store = goodStoreFactory(encodedValue);
+        const storeSpy = jest.spyOn(store, 'set');
+        const immortal = new ImmortalStorage([store], '', undefined, encoder, decoder);
+        await immortal.set(key, correctValue);
+        expect(storeSpy).toHaveBeenCalledWith(key, encodedValue);
     });
 });
 
