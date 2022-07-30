@@ -1,3 +1,4 @@
+import { DEFAULT_KEY_PREFIX } from './defaults';
 import { ImmortalStorage } from './immortal-storage';
 
 const badStoreFactory = (msg) => ['get', 'set', 'remove'].reduce((store, method) => ({ ...store, [method]: () => Promise.reject(new Error(msg)) }), {});
@@ -204,5 +205,15 @@ describe('constructor', () => {
         ]);
         await expect(immortal.onReady).rejects.toThrow('Unable');
         expect(immortal.stores).toHaveLength(0);
+    });
+    test('should fallback to the default key-prefix when a nullish value is passed as 2nd arg', async () => {
+        const immortal1 = new ImmortalStorage([goodStoreFactory(correctValue)], undefined);
+        expect(immortal1.keyPrefix).toBe(DEFAULT_KEY_PREFIX);
+        const immortal2 = new ImmortalStorage([goodStoreFactory(correctValue)], null);
+        expect(immortal2.keyPrefix).toBe(DEFAULT_KEY_PREFIX);
+    });
+    test('should accept key-prefix argument when it is not nullish', async () => {
+        const immortal = new ImmortalStorage([goodStoreFactory(correctValue)], '');
+        expect(immortal.keyPrefix).toBe('');
     });
 });

@@ -21,7 +21,7 @@ export class ImmortalStorage {
         this.encoder = encoder || identity;
         this.decoder = decoder || identity;
         this.defaultValue = defaultValue;
-        this.keyPrefix = keyPrefix;
+        this.keyPrefix = keyPrefix ?? DEFAULT_KEY_PREFIX;
         this.stores = [];
         this.onReady = (async () => {
             const results = await Promise.allSettled(stores.map((StoreClassOrInstance) => {

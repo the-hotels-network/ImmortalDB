@@ -7,143 +7,12 @@
 		exports["ImmortalDB"] = factory();
 	else
 		root["ImmortalDB"] = factory();
-})(window, function() {
-return /******/ (function(modules) { // webpackBootstrap
-/******/ 	// The module cache
-/******/ 	var installedModules = {};
-/******/
-/******/ 	// The require function
-/******/ 	function __webpack_require__(moduleId) {
-/******/
-/******/ 		// Check if module is in cache
-/******/ 		if(installedModules[moduleId]) {
-/******/ 			return installedModules[moduleId].exports;
-/******/ 		}
-/******/ 		// Create a new module (and put it into the cache)
-/******/ 		var module = installedModules[moduleId] = {
-/******/ 			i: moduleId,
-/******/ 			l: false,
-/******/ 			exports: {}
-/******/ 		};
-/******/
-/******/ 		// Execute the module function
-/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-/******/
-/******/ 		// Flag the module as loaded
-/******/ 		module.l = true;
-/******/
-/******/ 		// Return the exports of the module
-/******/ 		return module.exports;
-/******/ 	}
-/******/
-/******/
-/******/ 	// expose the modules object (__webpack_modules__)
-/******/ 	__webpack_require__.m = modules;
-/******/
-/******/ 	// expose the module cache
-/******/ 	__webpack_require__.c = installedModules;
-/******/
-/******/ 	// define getter function for harmony exports
-/******/ 	__webpack_require__.d = function(exports, name, getter) {
-/******/ 		if(!__webpack_require__.o(exports, name)) {
-/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
-/******/ 		}
-/******/ 	};
-/******/
-/******/ 	// define __esModule on exports
-/******/ 	__webpack_require__.r = function(exports) {
-/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
-/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
-/******/ 		}
-/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
-/******/ 	};
-/******/
-/******/ 	// create a fake namespace object
-/******/ 	// mode & 1: value is a module id, require it
-/******/ 	// mode & 2: merge all properties of value into the ns
-/******/ 	// mode & 4: return value when already ns object
-/******/ 	// mode & 8|1: behave like require
-/******/ 	__webpack_require__.t = function(value, mode) {
-/******/ 		if(mode & 1) value = __webpack_require__(value);
-/******/ 		if(mode & 8) return value;
-/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
-/******/ 		var ns = Object.create(null);
-/******/ 		__webpack_require__.r(ns);
-/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
-/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
-/******/ 		return ns;
-/******/ 	};
-/******/
-/******/ 	// getDefaultExport function for compatibility with non-harmony modules
-/******/ 	__webpack_require__.n = function(module) {
-/******/ 		var getter = module && module.__esModule ?
-/******/ 			function getDefault() { return module['default']; } :
-/******/ 			function getModuleExports() { return module; };
-/******/ 		__webpack_require__.d(getter, 'a', getter);
-/******/ 		return getter;
-/******/ 	};
-/******/
-/******/ 	// Object.prototype.hasOwnProperty.call
-/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
-/******/
-/******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "";
-/******/
-/******/
-/******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 3);
-/******/ })
-/************************************************************************/
-/******/ ([
-/* 0 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+})(self, () => {
+return /******/ (() => { // webpackBootstrap
+/******/ 	var __webpack_modules__ = ({
 
-"use strict";
-/* WEBPACK VAR INJECTION */(function(global) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return countUniques; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return getGlobal; });
-/**
- * Counts unique elements of an iterable.
- */
-function countUniques(iterable) {
-  let nullishCount = 0;
-  const counter = Object.create(null);
-  iterable.forEach(el => {
-    if (el === undefined || el === null) {
-      nullishCount += 1;
-      return;
-    }
-
-    const amount = counter[el] || 0;
-    counter[el] = amount + 1;
-  });
-  const result = Object.entries(counter);
-
-  if (nullishCount) {
-    result.push([undefined, nullishCount]);
-  }
-
-  return result;
-}
-function getGlobal() {
-  if (typeof self !== 'undefined') {
-    return self;
-  }
-
-  if (typeof window !== 'undefined') {
-    return window;
-  }
-
-  if (typeof global !== 'undefined') {
-    return global;
-  }
-
-  throw new Error('unable to locate global object');
-}
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(2)))
-
-/***/ }),
-/* 1 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ 808:
+/***/ ((module, exports, __webpack_require__) => {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
  * JavaScript Cookie v2.2.1
@@ -156,10 +25,10 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
 	var registeredInModuleLoader;
 	if (true) {
 		!(__WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
-				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
-				(__WEBPACK_AMD_DEFINE_FACTORY__.call(exports, __webpack_require__, exports, module)) :
-				__WEBPACK_AMD_DEFINE_FACTORY__),
-				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+		__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
+		(__WEBPACK_AMD_DEFINE_FACTORY__.call(exports, __webpack_require__, exports, module)) :
+		__WEBPACK_AMD_DEFINE_FACTORY__),
+		__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 		registeredInModuleLoader = true;
 	}
 	if (true) {
@@ -314,55 +183,111 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
 }));
 
 
-/***/ }),
-/* 2 */
-/***/ (function(module, exports) {
+/***/ })
 
-var g;
-
-// This works in non-strict mode
-g = (function() {
-	return this;
-})();
-
-try {
-	// This works if eval is allowed (see CSP)
-	g = g || new Function("return this")();
-} catch (e) {
-	// This works if the window reference is available
-	if (typeof window === "object") g = window;
-}
-
-// g can still be undefined, but nothing to do about it...
-// We return undefined, instead of nothing here, so it's
-// easier to handle this case. if(!global) { ...}
-
-module.exports = g;
-
-
-/***/ }),
-/* 3 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
+/******/ 	});
+/************************************************************************/
+/******/ 	// The module cache
+/******/ 	var __webpack_module_cache__ = {};
+/******/ 	
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/ 		// Check if module is in cache
+/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		if (cachedModule !== undefined) {
+/******/ 			return cachedModule.exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 			// no module.id needed
+/******/ 			// no module.loaded needed
+/******/ 			exports: {}
+/******/ 		};
+/******/ 	
+/******/ 		// Execute the module function
+/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
+/******/ 	
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/ 	
+/************************************************************************/
+/******/ 	/* webpack/runtime/compat get default export */
+/******/ 	(() => {
+/******/ 		// getDefaultExport function for compatibility with non-harmony modules
+/******/ 		__webpack_require__.n = (module) => {
+/******/ 			var getter = module && module.__esModule ?
+/******/ 				() => (module['default']) :
+/******/ 				() => (module);
+/******/ 			__webpack_require__.d(getter, { a: getter });
+/******/ 			return getter;
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	(() => {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__webpack_require__.d = (exports, definition) => {
+/******/ 			for(var key in definition) {
+/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 				}
+/******/ 			}
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/global */
+/******/ 	(() => {
+/******/ 		__webpack_require__.g = (function() {
+/******/ 			if (typeof globalThis === 'object') return globalThis;
+/******/ 			try {
+/******/ 				return this || new Function('return this')();
+/******/ 			} catch (e) {
+/******/ 				if (typeof window === 'object') return window;
+/******/ 			}
+/******/ 		})();
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	(() => {
+/******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	(() => {
+/******/ 		// define __esModule on exports
+/******/ 		__webpack_require__.r = (exports) => {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/************************************************************************/
+var __webpack_exports__ = {};
+// This entry need to be wrapped in an IIFE because it need to be in strict mode.
+(() => {
 "use strict";
 // ESM COMPAT FLAG
 __webpack_require__.r(__webpack_exports__);
 
 // EXPORTS
-__webpack_require__.d(__webpack_exports__, "ImmortalDB", function() { return /* binding */ ImmortalDB; });
-__webpack_require__.d(__webpack_exports__, "ImmortalStorage", function() { return /* reexport */ immortal_storage_ImmortalStorage; });
-__webpack_require__.d(__webpack_exports__, "CookieStore", function() { return /* reexport */ cookie_store_CookieStore; });
-__webpack_require__.d(__webpack_exports__, "IndexedDbStore", function() { return /* reexport */ indexed_db_IndexedDbStore; });
-__webpack_require__.d(__webpack_exports__, "LocalStorageStore", function() { return /* reexport */ LocalStorageStore; });
-__webpack_require__.d(__webpack_exports__, "SessionStorageStore", function() { return /* reexport */ SessionStorageStore; });
-__webpack_require__.d(__webpack_exports__, "DEFAULT_STORES", function() { return /* reexport */ DEFAULT_STORES; });
-__webpack_require__.d(__webpack_exports__, "DEFAULT_KEY_PREFIX", function() { return /* reexport */ DEFAULT_KEY_PREFIX; });
+__webpack_require__.d(__webpack_exports__, {
+  "CookieStore": () => (/* reexport */ CookieStore),
+  "DEFAULT_KEY_PREFIX": () => (/* reexport */ DEFAULT_KEY_PREFIX),
+  "DEFAULT_STORES": () => (/* reexport */ DEFAULT_STORES),
+  "ImmortalDB": () => (/* binding */ ImmortalDB),
+  "ImmortalStorage": () => (/* reexport */ ImmortalStorage),
+  "IndexedDbStore": () => (/* reexport */ IndexedDbStore),
+  "LocalStorageStore": () => (/* reexport */ LocalStorageStore),
+  "SessionStorageStore": () => (/* reexport */ SessionStorageStore)
+});
 
 // EXTERNAL MODULE: ./node_modules/js-cookie/src/js.cookie.js
-var js_cookie = __webpack_require__(1);
+var js_cookie = __webpack_require__(808);
 var js_cookie_default = /*#__PURE__*/__webpack_require__.n(js_cookie);
-
-// CONCATENATED MODULE: ./src/cookie-store.js
+;// CONCATENATED MODULE: ./src/cookie-store.js
 //
 // ImmortalDB - A resilient key-value store for browsers.
 //
@@ -398,7 +323,7 @@ function amIInsideACrossOriginIframe() {
   }
 }
 
-class cookie_store_CookieStore {
+class CookieStore {
   constructor({
     ttl = DEFAULT_COOKIE_TTL,
     secure = DEFAULT_SECURE,
@@ -411,16 +336,16 @@ class cookie_store_CookieStore {
   }
 
   async get(key) {
-    const value = js_cookie_default.a.get(key);
+    const value = js_cookie_default().get(key);
     return typeof value === 'string' ? value : undefined;
   }
 
   async set(key, value) {
-    js_cookie_default.a.set(key, value, this._constructCookieParams());
+    js_cookie_default().set(key, value, this._constructCookieParams());
   }
 
   async remove(key) {
-    js_cookie_default.a.remove(key, this._constructCookieParams());
+    js_cookie_default().remove(key, this._constructCookieParams());
   }
 
   _constructCookieParams() {
@@ -434,10 +359,46 @@ class cookie_store_CookieStore {
 }
 
 
-// EXTERNAL MODULE: ./src/helpers.js
-var helpers = __webpack_require__(0);
+;// CONCATENATED MODULE: ./src/helpers.js
+/**
+ * Counts unique elements of an iterable.
+ */
+function countUniques(iterable) {
+  let nullishCount = 0;
+  const counter = Object.create(null);
+  iterable.forEach(el => {
+    if (el === undefined || el === null) {
+      nullishCount += 1;
+      return;
+    }
 
-// CONCATENATED MODULE: ./node_modules/idb-keyval/dist/idb-keyval.mjs
+    const amount = counter[el] || 0;
+    counter[el] = amount + 1;
+  });
+  const result = Object.entries(counter);
+
+  if (nullishCount) {
+    result.push([undefined, nullishCount]);
+  }
+
+  return result;
+}
+function getGlobal() {
+  if (typeof self !== 'undefined') {
+    return self;
+  }
+
+  if (typeof window !== 'undefined') {
+    return window;
+  }
+
+  if (typeof __webpack_require__.g !== 'undefined') {
+    return __webpack_require__.g;
+  }
+
+  throw new Error('unable to locate global object');
+}
+;// CONCATENATED MODULE: ./node_modules/idb-keyval/dist/idb-keyval.mjs
 class Store {
     constructor(dbName = 'keyval-store', storeName = 'keyval') {
         this.storeName = storeName;
@@ -503,7 +464,7 @@ function keys(store = getDefaultStore()) {
 
 
 
-// CONCATENATED MODULE: ./src/indexed-db.js
+;// CONCATENATED MODULE: ./src/indexed-db.js
 //
 // ImmortalDB - A resilient key-value store for browsers.
 //
@@ -517,7 +478,7 @@ function keys(store = getDefaultStore()) {
 const DEFAULT_DATABASE_NAME = 'ImmortalDB';
 const DEFAULT_STORE_NAME = 'key-value-pairs';
 
-class indexed_db_IndexedDbStore {
+class IndexedDbStore {
   constructor(dbName = DEFAULT_DATABASE_NAME, storeName = DEFAULT_STORE_NAME) {
     this.store = new Store(dbName, storeName);
     return (async () => {
@@ -560,7 +521,7 @@ class indexed_db_IndexedDbStore {
 }
 
 
-// CONCATENATED MODULE: ./src/web-storage.js
+;// CONCATENATED MODULE: ./src/web-storage.js
 //
 // ImmortalDB - A resilient key-value store for browsers.
 //
@@ -606,19 +567,19 @@ class SessionStorageStore extends StorageApiWrapper {
 }
 
 
-// CONCATENATED MODULE: ./src/defaults.js
+;// CONCATENATED MODULE: ./src/defaults.js
 
 
 
 
 const DEFAULT_VALUE = undefined;
 const DEFAULT_KEY_PREFIX = '_immortal|';
-const DEFAULT_STORES = [cookie_store_CookieStore];
-const defaults_window = Object(helpers["b" /* getGlobal */])();
+const DEFAULT_STORES = [CookieStore];
+const defaults_window = getGlobal();
 
 try {
   if (defaults_window && defaults_window.indexedDB) {
-    DEFAULT_STORES.push(indexed_db_IndexedDbStore);
+    DEFAULT_STORES.push(IndexedDbStore);
   }
 } catch (err) {}
 
@@ -627,7 +588,7 @@ try {
     DEFAULT_STORES.push(LocalStorageStore);
   }
 } catch (err) {}
-// CONCATENATED MODULE: ./src/immortal-storage.js
+;// CONCATENATED MODULE: ./src/immortal-storage.js
 
 
 const FULFILLED = 'fulfilled';
@@ -635,12 +596,12 @@ const REJECTED = 'rejected';
 
 const identity = value => value;
 
-class immortal_storage_ImmortalStorage {
+class ImmortalStorage {
   constructor(stores = DEFAULT_STORES, keyPrefix = DEFAULT_KEY_PREFIX, defaultValue = DEFAULT_VALUE, encoder = identity, decoder = identity) {
     this.encoder = encoder || identity;
     this.decoder = decoder || identity;
     this.defaultValue = defaultValue;
-    this.keyPrefix = keyPrefix;
+    this.keyPrefix = keyPrefix ?? DEFAULT_KEY_PREFIX;
     this.stores = [];
 
     this.onReady = (async () => {
@@ -674,7 +635,7 @@ class immortal_storage_ImmortalStorage {
     const prefixedKey = this.prefix(key);
     const results = await Promise.allSettled(this.stores.map(store => store.get(prefixedKey).then(value => value && this.decoder(value))));
     const values = results.filter(result => result.status === FULFILLED).map(result => result.value);
-    const counted = Object(helpers["a" /* countUniques */])(values);
+    const counted = countUniques(values);
     counted.sort((a, b) => a[1] <= b[1]);
     const validated = counted.filter(([value]) => value !== undefined);
 
@@ -727,7 +688,7 @@ class immortal_storage_ImmortalStorage {
   }
 
 }
-// CONCATENATED MODULE: ./src/index.js
+;// CONCATENATED MODULE: ./src/index.js
 //
 // ImmortalDB - A resilient key-value store for browsers.
 //
@@ -742,9 +703,11 @@ class immortal_storage_ImmortalStorage {
 
 
 
-const ImmortalDB = new immortal_storage_ImmortalStorage();
+const ImmortalDB = new ImmortalStorage();
 
+})();
 
-/***/ })
-/******/ ]);
+/******/ 	return __webpack_exports__;
+/******/ })()
+;
 });
