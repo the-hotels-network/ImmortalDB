@@ -60,10 +60,7 @@ module.exports = (env, argv) => ({
                 use: {
                     loader: 'babel-loader',
                     options: {
-                        presets: [['@babel/preset-env', {
-                            corejs: 3,
-                            useBuiltIns: 'usage',
-                        }]]
+                        presets: [['@babel/preset-env', { targets: 'current node' }]]
                     }
                 }
             }
