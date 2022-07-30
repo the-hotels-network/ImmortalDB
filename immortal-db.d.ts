@@ -53,7 +53,13 @@ interface StoreConstructor {
 }
 
 export class ImmortalStorage {
-    constructor(stores?: StoreConstructor[]);
+    constructor(
+        stores?: StoreConstructor[],
+        keyPrefix?: string,
+        defaultValue?: any,
+        encoder?: (input: string) => string,
+        decoder?: (input: string) => string
+    );
 
     get(key: string, _default?: null): Promise<string | null>;
     get(key: string, _default: string): Promise<string>;
