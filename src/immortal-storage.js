@@ -55,10 +55,7 @@ export class ImmortalStorage {
         const prefixedKey = this.prefix(key);
 
         const results = await Promise.allSettled(
-            this.stores.map((store) => (
-                store.get(prefixedKey)
-                    .then((value) => value && this.decoder(value))
-            )),
+            this.stores.map((store) => store.get(prefixedKey))
         );
 
         const values = results
@@ -83,12 +80,13 @@ export class ImmortalStorage {
         }
 
         const [value] = validated[0];
+        const decodedValue = this.decoder(value);
 
         try {
-            await this.set(key, value);
+            await this.set(key, decodedValue);
         } catch (e) {}
 
-        return value;
+        return decodedValue;
     }
 
     async set(key, value) {

@@ -633,7 +633,7 @@ class ImmortalStorage {
   async get(key, _default = this.defaultValue) {
     await this.onReady;
     const prefixedKey = this.prefix(key);
-    const results = await Promise.allSettled(this.stores.map(store => store.get(prefixedKey).then(value => value && this.decoder(value))));
+    const results = await Promise.allSettled(this.stores.map(store => store.get(prefixedKey)));
     const values = results.filter(result => result.status === FULFILLED).map(result => result.value);
     const counted = countUniques(values);
     counted.sort((a, b) => a[1] <= b[1]);
@@ -650,12 +650,13 @@ class ImmortalStorage {
     }
 
     const [value] = validated[0];
+    const decodedValue = this.decoder(value);
 
     try {
-      await this.set(key, value);
+      await this.set(key, decodedValue);
     } catch (e) {}
 
-    return value;
+    return decodedValue;
   }
 
   async set(key, value) {
