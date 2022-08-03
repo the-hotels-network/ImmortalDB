@@ -1,7 +1,7 @@
 {
   "name": "@thehotelsnetwork/immortal-db",
   "private": false,
-  "version": "2.1.2",
+  "version": "3.0.0",
   "main": "dist/immortal-db.js",
   "module": "src/index.js",
   "types": "immortal-db.d.ts",

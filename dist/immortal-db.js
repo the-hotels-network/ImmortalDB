@@ -275,14 +275,37 @@ __webpack_require__.r(__webpack_exports__);
 // EXPORTS
 __webpack_require__.d(__webpack_exports__, {
   "CookieStore": () => (/* reexport */ CookieStore),
+  "DEFAULT_DATABASE_NAME": () => (/* reexport */ DEFAULT_DATABASE_NAME),
   "DEFAULT_KEY_PREFIX": () => (/* reexport */ DEFAULT_KEY_PREFIX),
   "DEFAULT_STORES": () => (/* reexport */ DEFAULT_STORES),
-  "ImmortalDB": () => (/* binding */ ImmortalDB),
+  "DEFAULT_STORE_NAME": () => (/* reexport */ DEFAULT_STORE_NAME),
+  "DEFAULT_VALUE": () => (/* reexport */ DEFAULT_VALUE),
+  "ImmortalDecoderError": () => (/* reexport */ ImmortalDecoderError),
+  "ImmortalEncoderError": () => (/* reexport */ ImmortalEncoderError),
   "ImmortalStorage": () => (/* reexport */ ImmortalStorage),
   "IndexedDbStore": () => (/* reexport */ IndexedDbStore),
   "LocalStorageStore": () => (/* reexport */ LocalStorageStore),
   "SessionStorageStore": () => (/* reexport */ SessionStorageStore)
 });
+
+;// CONCATENATED MODULE: ./src/errors/immortal-encoder-error.js
+class ImmortalEncoderError extends Error {
+  constructor(message = 'Unable to encode the value to be stored') {
+    super(message);
+    this.name = 'ImmortalEncoderError';
+  }
+
+}
+;// CONCATENATED MODULE: ./src/errors/immortal-decoder-error.js
+class ImmortalDecoderError extends Error {
+  constructor(message = 'Unable to decode the stored value') {
+    super(message);
+    this.name = 'ImmortalDecoderError';
+  }
+
+}
+;// CONCATENATED MODULE: ./src/errors/index.js
+
 
 // EXTERNAL MODULE: ./node_modules/js-cookie/src/js.cookie.js
 var js_cookie = __webpack_require__(808);
@@ -591,6 +614,7 @@ try {
 ;// CONCATENATED MODULE: ./src/immortal-storage.js
 
 
+
 const FULFILLED = 'fulfilled';
 const REJECTED = 'rejected';
 
@@ -650,11 +674,21 @@ class ImmortalStorage {
     }
 
     const [value] = validated[0];
-    const decodedValue = this.decoder(value);
+    let decodedValue;
+
+    try {
+      decodedValue = await this.decoder(value);
+    } catch (_) {
+      throw new ImmortalDecoderError();
+    }
 
     try {
       await this.set(key, decodedValue);
-    } catch (e) {}
+    } catch (error) {
+      if (error instanceof ImmortalEncoderError) {
+        throw error;
+      }
+    }
 
     return decodedValue;
   }
@@ -662,7 +696,14 @@ class ImmortalStorage {
   async set(key, value) {
     await this.onReady;
     const prefixedKey = this.prefix(key);
-    const encodedValue = await Promise.resolve(this.encoder(value));
+    let encodedValue;
+
+    try {
+      encodedValue = await this.encoder(value);
+    } catch (_) {
+      throw new ImmortalEncoderError();
+    }
+
     const results = await Promise.allSettled(this.stores.map(store => store.set(prefixedKey, encodedValue)));
     const rejections = results.filter(result => result.status === REJECTED);
 
@@ -704,7 +745,6 @@ class ImmortalStorage {
 
 
 
-const ImmortalDB = new ImmortalStorage();
 
 })();
 
