@@ -1,3 +1,7 @@
+import {
+    ImmortalEncoderError,
+    ImmortalDecoderError,
+} from './errors';
 import { countUniques } from './helpers';
 import {
     DEFAULT_KEY_PREFIX,
@@ -80,11 +84,21 @@ export class ImmortalStorage {
         }
 
         const [value] = validated[0];
-        const decodedValue = this.decoder(value);
+        let decodedValue;
+
+        try {
+            decodedValue = await this.decoder(value);
+        } catch (_) {
+            throw new ImmortalDecoderError();
+        }
 
         try {
             await this.set(key, decodedValue);
-        } catch (e) {}
+        } catch (error) {
+            if (error instanceof ImmortalEncoderError) {
+                throw error;
+            }
+        }
 
         return decodedValue;
     }
@@ -93,7 +107,13 @@ export class ImmortalStorage {
         await this.onReady;
 
         const prefixedKey = this.prefix(key);
-        const encodedValue = await Promise.resolve(this.encoder(value));
+        let encodedValue;
+
+        try {
+            encodedValue = await this.encoder(value);
+        } catch (_) {
+            throw new ImmortalEncoderError();
+        }
 
         const results = await Promise.allSettled(
             this.stores.map((store) => store.set(prefixedKey, encodedValue)),

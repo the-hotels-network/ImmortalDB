@@ -8,21 +8,9 @@
 // License: MIT
 //
 
-import { CookieStore } from './cookie-store';
-import { ImmortalStorage } from './immortal-storage';
-import { IndexedDbStore } from './indexed-db';
-import { LocalStorageStore, SessionStorageStore } from './web-storage';
-import { DEFAULT_KEY_PREFIX, DEFAULT_STORES } from './defaults';
-
-const ImmortalDB = new ImmortalStorage();
-
-export {
-    ImmortalDB,
-    ImmortalStorage,
-    CookieStore,
-    IndexedDbStore,
-    LocalStorageStore,
-    SessionStorageStore,
-    DEFAULT_STORES,
-    DEFAULT_KEY_PREFIX,
-};
+export * from './errors';
+export * from './cookie-store';
+export * from './immortal-storage';
+export * from './indexed-db';
+export * from './web-storage';
+export * from './defaults';

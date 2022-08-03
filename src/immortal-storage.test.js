@@ -1,4 +1,5 @@
 import { DEFAULT_KEY_PREFIX } from './defaults';
+import { ImmortalDecoderError, ImmortalEncoderError } from './errors';
 import { ImmortalStorage } from './immortal-storage';
 
 const badStoreFactory = (msg) => ['get', 'set', 'remove'].reduce((store, method) => ({ ...store, [method]: () => Promise.reject(new Error(msg)) }), {});
@@ -88,6 +89,26 @@ describe('get()', () => {
         expect(storeSpy).toHaveBeenCalledWith(key, encodedValue);
         await expect(immortal.get(key)).resolves.toBe(correctValue);
     });
+    test('should throw if decoding of the stored value fails', async () => {
+        expect.assertions(1);
+        const encoder = JSON.stringify;
+        const decoder = JSON.parse;
+        const encodedValue = 'XYZ';
+        const store = goodStoreFactory(encodedValue);
+        const immortal = new ImmortalStorage([store], '', undefined, encoder, decoder);
+        await expect(immortal.get(key)).rejects.toBeInstanceOf(ImmortalDecoderError);
+    });
+    test('should throw if decoding of the stored value fails (async)', async () => {
+        expect.assertions(1);
+        const encoder = JSON.stringify;
+        const decoder = () => (
+            new Promise((_, reject) => { setTimeout(() => { reject(new Error()); }, 10); })
+        );
+        const encodedValue = 'XYZ';
+        const store = goodStoreFactory(encodedValue);
+        const immortal = new ImmortalStorage([store], '', undefined, encoder, decoder);
+        await expect(immortal.get(key)).rejects.toBeInstanceOf(ImmortalDecoderError);
+    });
 });
 
 describe('set()', () => {
@@ -133,6 +154,26 @@ describe('set()', () => {
         const immortal = new ImmortalStorage([store], '', undefined, encoder, decoder);
         await immortal.set(key, correctValue);
         expect(storeSpy).toHaveBeenCalledWith(key, encodedValue);
+    });
+    test('should throw if encoding of the value to be stored fails', async () => {
+        expect.assertions(1);
+        const encoder = () => { throw new Error(); };
+        const decoder = JSON.parse;
+        const encodedValue = 'XYZ';
+        const store = goodStoreFactory(encodedValue);
+        const immortal = new ImmortalStorage([store], '', undefined, encoder, decoder);
+        await expect(immortal.set(key, { foo: 'bar' })).rejects.toBeInstanceOf(ImmortalEncoderError);
+    });
+    test('should throw if encoding of the value to be stored fails (async)', async () => {
+        expect.assertions(1);
+        const encoder = () => (
+            new Promise((_, reject) => { setTimeout(() => { reject(new Error()); }, 10); })
+        );
+        const decoder = JSON.parse;
+        const encodedValue = 'XYZ';
+        const store = goodStoreFactory(encodedValue);
+        const immortal = new ImmortalStorage([store], '', undefined, encoder, decoder);
+        await expect(immortal.set(key, { foo: 'bar' })).rejects.toBeInstanceOf(ImmortalEncoderError);
     });
 });
 
