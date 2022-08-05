@@ -282,14 +282,26 @@ __webpack_require__.d(__webpack_exports__, {
   "DEFAULT_VALUE": () => (/* reexport */ DEFAULT_VALUE),
   "ImmortalDecoderError": () => (/* reexport */ ImmortalDecoderError),
   "ImmortalEncoderError": () => (/* reexport */ ImmortalEncoderError),
+  "ImmortalError": () => (/* reexport */ ImmortalError),
   "ImmortalStorage": () => (/* reexport */ ImmortalStorage),
+  "ImmortalStoresPartialError": () => (/* reexport */ ImmortalStoresPartialError),
+  "ImmortalStoresTotalError": () => (/* reexport */ ImmortalStoresTotalError),
   "IndexedDbStore": () => (/* reexport */ IndexedDbStore),
   "LocalStorageStore": () => (/* reexport */ LocalStorageStore),
   "SessionStorageStore": () => (/* reexport */ SessionStorageStore)
 });
 
+;// CONCATENATED MODULE: ./src/errors/immortal-error.js
+class ImmortalError extends Error {
+  constructor(message = 'ImmortalDB unexpected error') {
+    super(message);
+    this.name = 'ImmortalError';
+  }
+
+}
 ;// CONCATENATED MODULE: ./src/errors/immortal-encoder-error.js
-class ImmortalEncoderError extends Error {
+
+class ImmortalEncoderError extends ImmortalError {
   constructor(message = 'Unable to encode the value to be stored') {
     super(message);
     this.name = 'ImmortalEncoderError';
@@ -297,14 +309,36 @@ class ImmortalEncoderError extends Error {
 
 }
 ;// CONCATENATED MODULE: ./src/errors/immortal-decoder-error.js
-class ImmortalDecoderError extends Error {
+
+class ImmortalDecoderError extends ImmortalError {
   constructor(message = 'Unable to decode the stored value') {
     super(message);
     this.name = 'ImmortalDecoderError';
   }
 
 }
+;// CONCATENATED MODULE: ./src/errors/immortal-stores-partial-error.js
+
+class ImmortalStoresPartialError extends ImmortalError {
+  constructor(message = 'Some stores failed to perform operation') {
+    super(message);
+    this.name = 'ImmortalStoresPartialError';
+  }
+
+}
+;// CONCATENATED MODULE: ./src/errors/immortal-stores-total-error.js
+
+class ImmortalStoresTotalError extends ImmortalError {
+  constructor(message = 'All stores failed to perform operation') {
+    super(message);
+    this.name = 'ImmortalStoresPartialError';
+  }
+
+}
 ;// CONCATENATED MODULE: ./src/errors/index.js
+
+
+
 
 
 // EXTERNAL MODULE: ./node_modules/js-cookie/src/js.cookie.js
@@ -650,6 +684,19 @@ class ImmortalStorage {
     })();
   }
 
+  _createErrorFromSettledPromises(settledPromises, operation) {
+    const reasons = settledPromises.filter(result => result.status === REJECTED).map(result => result.reason instanceof Error ? result.reason.message : String(result.reason));
+
+    if (reasons.length > 0) {
+      const all = this.stores.length === reasons.length;
+      const errorMessage = [`${all ? 'All' : 'Some'} stores failed to ${operation}(). Store errors:`, ...reasons.map(reason => `    * "${reason}"`)].join('\n');
+      const ActualError = all ? ImmortalStoresTotalError : ImmortalStoresPartialError;
+      return new ActualError(errorMessage);
+    }
+
+    return undefined;
+  }
+
   prefix(value) {
     return `${this.keyPrefix}${value}`;
   }
@@ -664,9 +711,9 @@ class ImmortalStorage {
     const validated = counted.filter(([value]) => value !== undefined);
 
     if (validated.length === 0) {
-      const rejections = results.filter(result => result.status === REJECTED);
+      const error = this._createErrorFromSettledPromises(results, 'get');
 
-      if (rejections.length === 0) {
+      if (!error) {
         await this.remove(key);
       }
 
@@ -705,11 +752,11 @@ class ImmortalStorage {
     }
 
     const results = await Promise.allSettled(this.stores.map(store => store.set(prefixedKey, encodedValue)));
-    const rejections = results.filter(result => result.status === REJECTED);
 
-    if (rejections.length > 0) {
-      const all = this.stores.length === rejections.length;
-      throw new Error(`${all ? 'All' : 'Some'} stores failed to set('${key}', '${value}')`);
+    const error = this._createErrorFromSettledPromises(results, 'set');
+
+    if (error) {
+      throw error;
     }
 
     return value;
@@ -719,11 +766,11 @@ class ImmortalStorage {
     await this.onReady;
     const prefixedKey = this.prefix(key);
     const results = await Promise.allSettled(this.stores.map(store => store.remove(prefixedKey)));
-    const rejections = results.filter(result => result.status === REJECTED);
 
-    if (rejections.length > 0) {
-      const all = this.stores.length === rejections.length;
-      throw new Error(`${all ? 'All' : 'Some'} stores failed to remove('${key}')`);
+    const error = this._createErrorFromSettledPromises(results, 'remove');
+
+    if (error) {
+      throw error;
     }
 
     return this.defaultValue;
