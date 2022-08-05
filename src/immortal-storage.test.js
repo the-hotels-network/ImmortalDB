@@ -1,5 +1,10 @@
 import { DEFAULT_KEY_PREFIX } from './defaults';
-import { ImmortalDecoderError, ImmortalEncoderError } from './errors';
+import {
+    ImmortalDecoderError,
+    ImmortalEncoderError,
+    ImmortalStoresPartialError,
+    ImmortalStoresTotalError,
+} from './errors';
 import { ImmortalStorage } from './immortal-storage';
 
 const badStoreFactory = (msg) => ['get', 'set', 'remove'].reduce((store, method) => ({ ...store, [method]: () => Promise.reject(new Error(msg)) }), {});
@@ -122,16 +127,33 @@ describe('set()', () => {
     test('should reject with reason "Some..." when an store fails', async () => {
         const immortal = new ImmortalStorage([
             goodStoreFactory(correctValue),
-            badStoreFactory(correctValue),
+            badStoreFactory(errorMessage),
         ]);
-        await expect(immortal.set(key, correctValue)).rejects.toThrow('Some');
+        await expect(immortal.set(key, correctValue))
+            .rejects.toBeInstanceOf(ImmortalStoresPartialError);
     });
     test('should reject with reason "All..." when all stores fail', async () => {
         const immortal = new ImmortalStorage([
-            badStoreFactory(correctValue),
-            badStoreFactory(correctValue),
+            badStoreFactory(errorMessage),
+            badStoreFactory(errorMessage),
         ]);
-        await expect(immortal.set(key, correctValue)).rejects.toThrow('All');
+        await expect(immortal.set(key, correctValue))
+            .rejects.toBeInstanceOf(ImmortalStoresTotalError);
+    });
+    test('should reject with message containing operation + each failed store message', async () => {
+        const immortal = new ImmortalStorage([
+            badStoreFactory('do-not-like-cookies'),
+            goodStoreFactory(correctValue),
+            badStoreFactory('hate-your-tracking'),
+        ]);
+        const error = await immortal.set(key, correctValue).catch((e) => e);
+        const errorParts = error.message.split('\n');
+        expect(error).toBeInstanceOf(ImmortalStoresPartialError);
+        expect(errorParts).toEqual(expect.arrayContaining([
+            expect.stringMatching(/failed to set/),
+            expect.stringMatching(/ {4}\* "do-not-like-cookies"/),
+            expect.stringMatching(/ {4}\* "hate-your-tracking"/),
+        ]));
     });
     test('should encode the value with the given encoder', async () => {
         expect.assertions(1);
@@ -190,14 +212,30 @@ describe('remove()', () => {
             goodStoreFactory(correctValue),
             badStoreFactory(errorMessage),
         ]);
-        await expect(immortal.remove(key)).rejects.toThrow('Some');
+        await expect(immortal.remove(key))
+            .rejects.toBeInstanceOf(ImmortalStoresPartialError);
     });
     test('should reject with reason "All..." when all stores fail', async () => {
         const immortal = new ImmortalStorage([
-            badStoreFactory(correctValue),
+            badStoreFactory(errorMessage),
             badStoreFactory(errorMessage),
         ]);
-        await expect(immortal.remove(key)).rejects.toThrow('All');
+        await expect(immortal.remove(key))
+            .rejects.toBeInstanceOf(ImmortalStoresTotalError);
+    });
+    test('should reject with message containing operation + each failed store message', async () => {
+        const immortal = new ImmortalStorage([
+            badStoreFactory('do-not-like-cookies'),
+            badStoreFactory('hate-your-tracking'),
+        ]);
+        const error = await immortal.remove(key, correctValue).catch((e) => e);
+        const errorParts = error.message.split('\n');
+        expect(error).toBeInstanceOf(ImmortalStoresTotalError);
+        expect(errorParts).toEqual(expect.arrayContaining([
+            expect.stringMatching(/failed to remove/),
+            expect.stringMatching(/ {4}\* "do-not-like-cookies"/),
+            expect.stringMatching(/ {4}\* "hate-your-tracking"/),
+        ]));
     });
 });
 

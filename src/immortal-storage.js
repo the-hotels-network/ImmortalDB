@@ -1,6 +1,8 @@
 import {
     ImmortalEncoderError,
     ImmortalDecoderError,
+    ImmortalStoresPartialError,
+    ImmortalStoresTotalError,
 } from './errors';
 import { countUniques } from './helpers';
 import {
@@ -15,6 +17,7 @@ const REJECTED = 'rejected';
 const identity = (value) => value;
 
 export class ImmortalStorage {
+
     constructor(
         stores = DEFAULT_STORES,
         keyPrefix = DEFAULT_KEY_PREFIX,
@@ -49,6 +52,25 @@ export class ImmortalStorage {
         })();
     }
 
+    _createErrorFromSettledPromises(settledPromises, operation) {
+
+        const reasons = settledPromises
+            .filter((result) => result.status === REJECTED)
+            .map((result) => result.reason instanceof Error ? result.reason.message : String(result.reason));
+
+        if (reasons.length > 0) {
+            const all = this.stores.length === reasons.length;
+            const errorMessage = [
+                `${all ? 'All' : 'Some'} stores failed to ${operation}(). Store errors:`,
+                ...reasons.map(reason => `    * "${reason}"`),
+            ].join('\n');
+            const ActualError = all ? ImmortalStoresTotalError : ImmortalStoresPartialError;
+            return new ActualError(errorMessage);
+        }
+
+        return undefined;
+    }
+
     prefix(value) {
         return `${this.keyPrefix}${value}`;
     }
@@ -73,10 +95,8 @@ export class ImmortalStorage {
             .filter(([value]) => value !== undefined);
 
         if (validated.length === 0) {
-            const rejections = results
-                .filter((result) => result.status === REJECTED);
-
-            if (rejections.length === 0) {
+            const error = this._createErrorFromSettledPromises(results, 'get');
+            if (!error) {
                 await this.remove(key);
             }
 
@@ -119,12 +139,9 @@ export class ImmortalStorage {
             this.stores.map((store) => store.set(prefixedKey, encodedValue)),
         );
 
-        const rejections = results
-            .filter((result) => result.status === REJECTED);
-
-        if (rejections.length > 0) {
-            const all = this.stores.length === rejections.length;
-            throw new Error(`${all ? 'All' : 'Some'} stores failed to set('${key}', '${value}')`);
+        const error = this._createErrorFromSettledPromises(results, 'set');
+        if (error) {
+            throw error;
         }
 
         return value;
@@ -139,12 +156,9 @@ export class ImmortalStorage {
             this.stores.map((store) => store.remove(prefixedKey)),
         );
 
-        const rejections = results
-            .filter((result) => result.status === REJECTED);
-
-        if (rejections.length > 0) {
-            const all = this.stores.length === rejections.length;
-            throw new Error(`${all ? 'All' : 'Some'} stores failed to remove('${key}')`);
+        const error = this._createErrorFromSettledPromises(results, 'remove');
+        if (error) {
+            throw error;
         }
 
         return this.defaultValue;
