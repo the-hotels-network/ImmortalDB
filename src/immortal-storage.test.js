@@ -155,6 +155,22 @@ describe('set()', () => {
             expect.stringMatching(/ {4}\* "hate-your-tracking"/),
         ]));
     });
+    test('should reject when the integrity check fails', async () => {
+        const goodStore1 = goodStoreFactory(correctValue);
+        const goodStore2 = goodStoreFactory(correctValue);
+        goodStore2.get = async () => 'someOtherValue';
+        const immortal = new ImmortalStorage([
+            goodStore1,
+            goodStore2,
+        ]);
+        const error = await immortal.set(key, correctValue).catch((e) => e);
+        const errorParts = error.message.split('\n');
+        expect(error).toBeInstanceOf(ImmortalStoresPartialError);
+        expect(errorParts).toEqual(expect.arrayContaining([
+            expect.stringMatching(/failed to set/),
+            expect.stringMatching(/ {4}\* "Integrity check failed"/),
+        ]));
+    });
     test('should encode the value with the given encoder', async () => {
         expect.assertions(1);
         const encoder = btoa;
