@@ -144,6 +144,19 @@ export class ImmortalStorage {
             throw error;
         }
 
+        const integrityCheckResults = await Promise.allSettled(
+            this.stores.map((store) => store.get(prefixedKey).then((storedEncodedValue) => {
+                if (storedEncodedValue !== encodedValue) {
+                    return Promise.reject(new Error('Integrity check failed'));
+                }
+            }))
+        );
+
+        const integrityError = this._createErrorFromSettledPromises(integrityCheckResults, 'set');
+        if (integrityError) {
+            throw integrityError;
+        }
+
         return value;
     }
 
