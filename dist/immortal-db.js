@@ -760,7 +760,7 @@ class ImmortalStorage {
     }
 
     const integrityCheckResults = await Promise.allSettled(this.stores.map(store => store.get(prefixedKey).then(storedEncodedValue => {
-      if (storedEncodedValue !== encodedValue) {
+      if (storedEncodedValue && storedEncodedValue !== encodedValue) {
         return Promise.reject(new Error('Integrity check failed'));
       }
     })));
