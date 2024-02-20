@@ -155,7 +155,7 @@ describe('set()', () => {
             expect.stringMatching(/ {4}\* "hate-your-tracking"/),
         ]));
     });
-    test('should reject when the integrity check fails', async () => {
+    test('should reject when the integrity check fails (value is different)', async () => {
         const goodStore1 = goodStoreFactory(correctValue);
         const goodStore2 = goodStoreFactory(correctValue);
         goodStore2.get = async () => 'someOtherValue';
@@ -170,6 +170,16 @@ describe('set()', () => {
             expect.stringMatching(/failed to set/),
             expect.stringMatching(/ {4}\* "Integrity check failed"/),
         ]));
+    });
+    test('should not reject when integrity is not passed because the value couldn\'t be stored', async () => {
+        const goodStore1 = goodStoreFactory(correctValue);
+        const goodStore2 = goodStoreFactory(correctValue);
+        goodStore2.get = async () => '';
+        const immortal = new ImmortalStorage([
+            goodStore1,
+            goodStore2,
+        ]);
+        await immortal.set(key, correctValue);
     });
     test('should encode the value with the given encoder', async () => {
         expect.assertions(1);
