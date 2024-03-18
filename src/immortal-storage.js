@@ -92,7 +92,7 @@ export class ImmortalStorage {
         counted.sort((a, b) => a[1] <= b[1]);
 
         const validated = counted
-            .filter(([value]) => value !== undefined);
+            .filter(([value]) => value !== undefined && value !== 'undefined');
 
         if (validated.length === 0) {
             const error = this._createErrorFromSettledPromises(results, 'get');
@@ -135,6 +135,10 @@ export class ImmortalStorage {
             throw new ImmortalEncoderError();
         }
 
+        if (encodedValue === undefined || encodedValue === 'undefined') {
+            throw new ImmortalEncoderError('Unable to store encoded value "undefined"');
+        }
+
         const results = await Promise.allSettled(
             this.stores.map((store) => store.set(prefixedKey, encodedValue)),
         );
@@ -146,7 +150,7 @@ export class ImmortalStorage {
 
         const integrityCheckResults = await Promise.allSettled(
             this.stores.map((store) => store.get(prefixedKey).then((storedEncodedValue) => {
-                if (storedEncodedValue && storedEncodedValue !== encodedValue) {
+                if (storedEncodedValue && storedEncodedValue !== 'undefined' && storedEncodedValue !== encodedValue) {
                     return Promise.reject(new Error('Integrity check failed'));
                 }
             }))
