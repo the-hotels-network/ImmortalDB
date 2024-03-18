@@ -171,10 +171,13 @@ describe('set()', () => {
             expect.stringMatching(/ {4}\* "Integrity check failed"/),
         ]));
     });
-    test('should not reject when integrity is not passed because the value couldn\'t be stored', async () => {
+    test.each([
+        ['empty string', ''],
+        ['undefined (as string)', 'undefined'],
+    ])('should not reject when integrity is not passed because the value couldn\'t be stored (get returned %s)', async (_, storedValue) => {
         const goodStore1 = goodStoreFactory(correctValue);
         const goodStore2 = goodStoreFactory(correctValue);
-        goodStore2.get = async () => '';
+        goodStore2.get = async () => storedValue;
         const immortal = new ImmortalStorage([
             goodStore1,
             goodStore2,
