@@ -331,7 +331,7 @@ class ImmortalStoresPartialError extends ImmortalError {
 class ImmortalStoresTotalError extends ImmortalError {
   constructor(message = 'All stores failed to perform operation') {
     super(message);
-    this.name = 'ImmortalStoresPartialError';
+    this.name = 'ImmortalStoresTotalError';
   }
 
 }
@@ -654,13 +654,15 @@ const REJECTED = 'rejected';
 
 const identity = value => value;
 
-class ImmortalStorage {
+class ImmortalStorage extends EventTarget {
   constructor(stores = DEFAULT_STORES, keyPrefix = DEFAULT_KEY_PREFIX, defaultValue = DEFAULT_VALUE, encoder = identity, decoder = identity) {
-    this.encoder = encoder || identity;
-    this.decoder = decoder || identity;
-    this.defaultValue = defaultValue;
-    this.keyPrefix = keyPrefix ?? DEFAULT_KEY_PREFIX;
-    this.stores = [];
+    super();
+    this._encoder = encoder || identity;
+    this._decoder = decoder || identity;
+    this._defaultValue = defaultValue;
+    this._keyPrefix = keyPrefix ?? DEFAULT_KEY_PREFIX;
+    this._stores = [];
+    this._locks = new Map();
 
     this.onReady = (async () => {
       const results = await Promise.allSettled(stores.map(StoreClassOrInstance => {
@@ -674,9 +676,9 @@ class ImmortalStorage {
           return Promise.reject(error);
         }
       }));
-      this.stores = results.filter(result => result.status === FULFILLED).map(result => result.value).filter(store => store);
+      this._stores = results.filter(result => result.status === FULFILLED).map(result => result.value).filter(store => store);
 
-      if (this.stores.length === 0) {
+      if (this._stores.length === 0) {
         return Promise.reject(new Error('Unable to construct any store'));
       }
 
@@ -688,7 +690,7 @@ class ImmortalStorage {
     const reasons = settledPromises.filter(result => result.status === REJECTED).map(result => result.reason instanceof Error ? result.reason.message : String(result.reason));
 
     if (reasons.length > 0) {
-      const all = this.stores.length === reasons.length;
+      const all = this._stores.length === reasons.length;
       const errorMessage = [`${all ? 'All' : 'Some'} stores failed to ${operation}(). Store errors:`, ...reasons.map(reason => `    * "${reason}"`)].join('\n');
       const ActualError = all ? ImmortalStoresTotalError : ImmortalStoresPartialError;
       return new ActualError(errorMessage);
@@ -697,24 +699,68 @@ class ImmortalStorage {
     return undefined;
   }
 
-  prefix(value) {
-    return `${this.keyPrefix}${value}`;
+  async _lock(key) {
+    if (!this._acquireLock(key)) {
+      return new Promise(resolve => {
+        this.addEventListener(key, function unlockHandler() {
+          if (this._acquireLock(key)) {
+            this.removeEventListener(key, unlockHandler);
+            resolve();
+          }
+        });
+      });
+    }
   }
 
-  async get(key, _default = this.defaultValue) {
+  async _unlock(key) {
+    this._locks.delete(key);
+
+    this.dispatchEvent(new Event(key));
+  }
+
+  _prefix(value) {
+    return `${this._keyPrefix}${value}`;
+  }
+
+  _acquireLock(key) {
+    if (!this._locks.has(key)) {
+      this._locks.set(key, true);
+
+      return true;
+    }
+
+    return false;
+  }
+
+  async get(key, _default = this._defaultValue) {
+    await this._lock(key);
+
+    try {
+      const result = await this._get(key, _default);
+      await this._unlock(key);
+      return result;
+    } catch (reason) {
+      await this._unlock(key);
+      throw reason;
+    }
+  }
+
+  async _get(key, _default = this._defaultValue) {
     await this.onReady;
-    const prefixedKey = this.prefix(key);
-    const results = await Promise.allSettled(this.stores.map(store => store.get(prefixedKey)));
+
+    const prefixedKey = this._prefix(key);
+
+    const results = await Promise.allSettled(this._stores.map(store => store.get(prefixedKey)));
     const values = results.filter(result => result.status === FULFILLED).map(result => result.value);
     const counted = countUniques(values);
     counted.sort((a, b) => a[1] <= b[1]);
-    const validated = counted.filter(([value]) => value !== undefined);
+    const validated = counted.filter(([value]) => value !== undefined && value !== 'undefined');
 
     if (validated.length === 0) {
       const error = this._createErrorFromSettledPromises(results, 'get');
 
       if (!error) {
-        await this.remove(key);
+        await this._remove(key);
       }
 
       return _default;
@@ -724,13 +770,13 @@ class ImmortalStorage {
     let decodedValue;
 
     try {
-      decodedValue = await this.decoder(value);
+      decodedValue = await this._decoder(value);
     } catch (_) {
       throw new ImmortalDecoderError();
     }
 
     try {
-      await this.set(key, decodedValue);
+      await this._set(key, decodedValue);
     } catch (error) {
       if (error instanceof ImmortalEncoderError) {
         throw error;
@@ -741,17 +787,36 @@ class ImmortalStorage {
   }
 
   async set(key, value) {
+    await this._lock(key);
+
+    try {
+      const result = await this._set(key, value);
+      await this._unlock(key);
+      return result;
+    } catch (reason) {
+      await this._unlock(key);
+      throw reason;
+    }
+  }
+
+  async _set(key, value) {
     await this.onReady;
-    const prefixedKey = this.prefix(key);
+
+    const prefixedKey = this._prefix(key);
+
     let encodedValue;
 
     try {
-      encodedValue = await this.encoder(value);
+      encodedValue = await this._encoder(value);
     } catch (_) {
       throw new ImmortalEncoderError();
     }
 
-    const results = await Promise.allSettled(this.stores.map(store => store.set(prefixedKey, encodedValue)));
+    if (encodedValue === undefined || encodedValue === 'undefined') {
+      throw new ImmortalEncoderError('Unable to store encoded value "undefined"');
+    }
+
+    const results = await Promise.allSettled(this._stores.map(store => store.set(prefixedKey, encodedValue)));
 
     const error = this._createErrorFromSettledPromises(results, 'set');
 
@@ -759,8 +824,8 @@ class ImmortalStorage {
       throw error;
     }
 
-    const integrityCheckResults = await Promise.allSettled(this.stores.map(store => store.get(prefixedKey).then(storedEncodedValue => {
-      if (storedEncodedValue && storedEncodedValue !== encodedValue) {
+    const integrityCheckResults = await Promise.allSettled(this._stores.map(store => store.get(prefixedKey).then(storedEncodedValue => {
+      if (storedEncodedValue && storedEncodedValue !== 'undefined' && storedEncodedValue !== encodedValue) {
         return Promise.reject(new Error('Integrity check failed'));
       }
     })));
@@ -775,9 +840,24 @@ class ImmortalStorage {
   }
 
   async remove(key) {
+    await this._lock(key);
+
+    try {
+      const result = await this._remove(key);
+      await this._unlock(key);
+      return result;
+    } catch (reason) {
+      await this._unlock(key);
+      throw reason;
+    }
+  }
+
+  async _remove(key) {
     await this.onReady;
-    const prefixedKey = this.prefix(key);
-    const results = await Promise.allSettled(this.stores.map(store => store.remove(prefixedKey)));
+
+    const prefixedKey = this._prefix(key);
+
+    const results = await Promise.allSettled(this._stores.map(store => store.remove(prefixedKey)));
 
     const error = this._createErrorFromSettledPromises(results, 'remove');
 
@@ -785,7 +865,7 @@ class ImmortalStorage {
       throw error;
     }
 
-    return this.defaultValue;
+    return this._defaultValue;
   }
 
 }

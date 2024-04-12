@@ -1,3 +1,4 @@
+/* eslint no-underscore-dangle: OFF */
 import { DEFAULT_KEY_PREFIX } from './defaults';
 import {
     ImmortalDecoderError,
@@ -7,8 +8,8 @@ import {
 } from './errors';
 import { ImmortalStorage } from './immortal-storage';
 
-const badStoreFactory = (msg) => ['get', 'set', 'remove'].reduce((store, method) => ({ ...store, [method]: () => Promise.reject(new Error(msg)) }), {});
-const goodStoreFactory = (msg) => ['get', 'set', 'remove'].reduce((store, method) => ({ ...store, [method]: () => Promise.resolve(msg) }), {});
+const badStoreFactory = (msg) => ['get', 'set', 'remove'].reduce((store, method) => ({ ...store, [method]: jest.fn(() => Promise.reject(new Error(msg))) }), {});
+const goodStoreFactory = (msg) => ['get', 'set', 'remove'].reduce((store, method) => ({ ...store, [method]: jest.fn(() => Promise.resolve(msg)) }), {});
 
 function toAsyncConstructor(storeOrError, timeout = 0) {
     return function AsyncConstructor() {
@@ -39,7 +40,7 @@ describe('get()', () => {
             disidentStore,
         ]);
         await expect(immortal.get(key)).resolves.toBe(correctValue);
-        expect(disidentStoreSet).toBeCalledWith(immortal.prefix(key), correctValue);
+        expect(disidentStoreSet).toBeCalledWith(immortal._prefix(key), correctValue);
     });
     test('should return the correct common value without accounting on amount of nullish', async () => {
         const immortal = new ImmortalStorage([
@@ -113,6 +114,65 @@ describe('get()', () => {
         const store = goodStoreFactory(encodedValue);
         const immortal = new ImmortalStorage([store], '', undefined, encoder, decoder);
         await expect(immortal.get(key)).rejects.toBeInstanceOf(ImmortalDecoderError);
+    });
+    test('should be atomic for same key', async () => {
+        let firstStoreGetResolve;
+        const firstStoreGetPromise = new Promise((resolve) => { firstStoreGetResolve = resolve; });
+        const goodStore1 = goodStoreFactory(correctValue);
+        goodStore1.get
+            .mockImplementationOnce(() => firstStoreGetPromise)
+            .mockImplementationOnce(() => firstStoreGetPromise);
+
+        const immortal = new ImmortalStorage([
+            goodStore1,
+        ]);
+        immortal._get = jest.fn(immortal._get);
+
+        const firstGetPromise = immortal.get(key);
+        const secondGetPromise = immortal.get(key);
+
+        // await for current microtasks to resolve
+        await new Promise((resolve) => { process.nextTick(resolve); });
+        expect(immortal._get).toHaveBeenCalledTimes(1);
+
+        // even if we wait some more time
+        // _get won't be called a 2nd time
+        // until the first operation resolves
+        await new Promise((resolve) => { setTimeout(resolve, 10); });
+        expect(immortal._get).toHaveBeenCalledTimes(1);
+
+        // Once the store resolves the first get...
+        firstStoreGetResolve(correctValue);
+        await new Promise((resolve) => { process.nextTick(resolve); });
+
+        // finally _get has been called the 2nd time
+        expect(immortal._get).toHaveBeenCalledTimes(2);
+
+        await Promise.all([firstGetPromise, secondGetPromise]);
+    });
+    test('should not be atomic for different keys', async () => {
+        let firstStoreGetResolve;
+        const firstStoreGetPromise = new Promise((resolve) => { firstStoreGetResolve = resolve; });
+        const goodStore1 = goodStoreFactory(correctValue);
+        goodStore1.get
+            .mockImplementationOnce(() => firstStoreGetPromise)
+            .mockImplementationOnce(() => firstStoreGetPromise);
+
+        const immortal = new ImmortalStorage([
+            goodStore1,
+        ]);
+        immortal._get = jest.fn(immortal._get);
+
+        const firstGetPromise = immortal.get(key);
+        const secondGetPromise = immortal.get('anotherKey');
+
+        // await for current microtasks to resolve
+        await new Promise((resolve) => { process.nextTick(resolve); });
+        // _get has been called for both keys immediatelly
+        expect(immortal._get).toHaveBeenCalledTimes(2);
+
+        firstStoreGetResolve(correctValue);
+        await Promise.all([firstGetPromise, secondGetPromise]);
     });
 });
 
@@ -226,6 +286,65 @@ describe('set()', () => {
         const immortal = new ImmortalStorage([store], '', undefined, encoder, decoder);
         await expect(immortal.set(key, { foo: 'bar' })).rejects.toBeInstanceOf(ImmortalEncoderError);
     });
+    test('should be atomic for same key', async () => {
+        let firstStoreSetResolve;
+        const firstStoreSetPromise = new Promise((resolve) => { firstStoreSetResolve = resolve; });
+        const goodStore1 = goodStoreFactory(correctValue);
+        goodStore1.set
+            .mockImplementationOnce(() => firstStoreSetPromise)
+            .mockImplementationOnce(() => firstStoreSetPromise);
+
+        const immortal = new ImmortalStorage([
+            goodStore1,
+        ]);
+        immortal._set = jest.fn(immortal._set);
+
+        const firstSetPromise = immortal.set(key, correctValue);
+        const secondSetPromise = immortal.set(key, correctValue);
+
+        // await for current microtasks to resolve
+        await new Promise((resolve) => { process.nextTick(resolve); });
+        expect(immortal._set).toHaveBeenCalledTimes(1);
+
+        // even if we wait some more time
+        // _set won't be called a 2nd time
+        // until the first operation resolves
+        await new Promise((resolve) => { setTimeout(resolve, 10); });
+        expect(immortal._set).toHaveBeenCalledTimes(1);
+
+        // Once the store resolves the first set...
+        firstStoreSetResolve(correctValue);
+        await new Promise((resolve) => { process.nextTick(resolve); });
+
+        // finally _set has been called the 2nd time
+        expect(immortal._set).toHaveBeenCalledTimes(2);
+
+        await Promise.all([firstSetPromise, secondSetPromise]);
+    });
+    test('should not be atomic for different keys', async () => {
+        let firstStoreSetResolve;
+        const firstStoreSetPromise = new Promise((resolve) => { firstStoreSetResolve = resolve; });
+        const goodStore1 = goodStoreFactory(correctValue);
+        goodStore1.set
+            .mockImplementationOnce(() => firstStoreSetPromise)
+            .mockImplementationOnce(() => firstStoreSetPromise);
+
+        const immortal = new ImmortalStorage([
+            goodStore1,
+        ]);
+        immortal._set = jest.fn(immortal._set);
+
+        const firstSetPromise = immortal.set(key, correctValue);
+        const secondSetPromise = immortal.set('anotherKey', correctValue);
+
+        // await for current microtasks to resolve
+        await new Promise((resolve) => { process.nextTick(resolve); });
+        // _set has been called for both keys immediatelly
+        expect(immortal._set).toHaveBeenCalledTimes(2);
+
+        firstStoreSetResolve(correctValue);
+        await Promise.all([firstSetPromise, secondSetPromise]);
+    });
 });
 
 describe('remove()', () => {
@@ -234,7 +353,7 @@ describe('remove()', () => {
             goodStoreFactory(correctValue),
             goodStoreFactory(correctValue),
         ]);
-        await expect(immortal.remove(key)).resolves.toBe(immortal.defaultValue);
+        await expect(immortal.remove(key)).resolves.toBe(immortal._defaultValue);
     });
     test('should reject with reason "Some..." when an store fails', async () => {
         const immortal = new ImmortalStorage([
@@ -266,6 +385,129 @@ describe('remove()', () => {
             expect.stringMatching(/ {4}\* "hate-your-tracking"/),
         ]));
     });
+    test('should be atomic for same key', async () => {
+        let firstStoreRemoveResolve;
+        const firstStoreRemovePromise = new Promise((resolve) => {
+            firstStoreRemoveResolve = resolve;
+        });
+        const goodStore1 = goodStoreFactory(correctValue);
+        goodStore1.remove
+            .mockImplementationOnce(() => firstStoreRemovePromise)
+            .mockImplementationOnce(() => firstStoreRemovePromise);
+
+        const immortal = new ImmortalStorage([
+            goodStore1,
+        ]);
+        immortal._remove = jest.fn(immortal._remove);
+
+        const firstRemovePromise = immortal.remove(key);
+        const secondRemovePromise = immortal.remove(key);
+
+        // await for current microtasks to resolve
+        await new Promise((resolve) => { process.nextTick(resolve); });
+        expect(immortal._remove).toHaveBeenCalledTimes(1);
+
+        // even if we wait some more time
+        // _remove won't be called a 2nd time
+        // until the first operation resolves
+        await new Promise((resolve) => { setTimeout(resolve, 10); });
+        expect(immortal._remove).toHaveBeenCalledTimes(1);
+
+        // Once the store resolves the first remove...
+        firstStoreRemoveResolve(correctValue);
+        await new Promise((resolve) => { process.nextTick(resolve); });
+
+        // finally _remove has been called the 2nd time
+        expect(immortal._remove).toHaveBeenCalledTimes(2);
+
+        await Promise.all([firstRemovePromise, secondRemovePromise]);
+    });
+    test('should not be atomic for different keys', async () => {
+        let firstStoreRemoveResolve;
+        const firstStoreRemovePromise = new Promise((resolve) => {
+            firstStoreRemoveResolve = resolve;
+        });
+        const goodStore1 = goodStoreFactory(correctValue);
+        goodStore1.remove
+            .mockImplementationOnce(() => firstStoreRemovePromise)
+            .mockImplementationOnce(() => firstStoreRemovePromise);
+
+        const immortal = new ImmortalStorage([
+            goodStore1,
+        ]);
+        immortal._remove = jest.fn(immortal._remove);
+
+        const firstRemovePromise = immortal.remove(key);
+        const secondRemovePromise = immortal.remove('anotherKey');
+
+        // await for current microtasks to resolve
+        await new Promise((resolve) => { process.nextTick(resolve); });
+        // "_get" has been called for both keys immediatelly
+        expect(immortal._remove).toHaveBeenCalledTimes(2);
+
+        firstStoreRemoveResolve(correctValue);
+        await Promise.all([firstRemovePromise, secondRemovePromise]);
+    });
+});
+
+describe('get() + set() + remove()', () => {
+    test.only('should be atomic for same key', async () => {
+        let storeGetResolve;
+        let storeSetResolve;
+        const storeGetPromise = new Promise((resolve) => { storeGetResolve = resolve; });
+        const storeSetPromise = new Promise((resolve) => { storeSetResolve = resolve; });
+        const goodStore1 = goodStoreFactory(correctValue);
+        goodStore1.get
+            .mockImplementationOnce(() => storeGetPromise)
+            .mockImplementationOnce(() => storeGetPromise);
+        goodStore1.set
+            // first mock is used on the _get operation
+            .mockImplementationOnce(() => Promise.resolve(correctValue))
+            // this is the actual mock to control the _set resolution
+            .mockImplementationOnce(() => storeSetPromise);
+
+        const immortal = new ImmortalStorage([
+            goodStore1,
+        ]);
+        immortal._get = jest.fn(immortal._get);
+        immortal._set = jest.fn(immortal._set);
+        immortal._remove = jest.fn(immortal._remove);
+
+        const getPromise = immortal.get(key);
+        const setPromise = immortal.set(key, correctValue);
+        const removePromise = immortal.remove(key);
+
+        // await for current microtasks to resolve
+        await new Promise((resolve) => { process.nextTick(resolve); });
+        expect(immortal._get).toHaveBeenCalledTimes(1);
+        expect(immortal._set).toHaveBeenCalledTimes(0);
+        expect(immortal._remove).toHaveBeenCalledTimes(0);
+
+        // even if we wait some more time
+        // _set and _remove won't be called
+        // until the first operation resolves
+        await new Promise((resolve) => { setTimeout(resolve, 10); });
+        expect(immortal._set).toHaveBeenCalledTimes(0);
+        expect(immortal._remove).toHaveBeenCalledTimes(0);
+
+        // Once the store resolves the get...
+        storeGetResolve(correctValue);
+        await new Promise((resolve) => { process.nextTick(resolve); });
+
+        // _set has been called (2 times, one in the get op and another in the set)
+        // and _remove not
+        expect(immortal._set).toHaveBeenCalledTimes(2);
+        expect(immortal._remove).toHaveBeenCalledTimes(0);
+
+        // Once the store resolves the set...
+        storeSetResolve(correctValue);
+        await new Promise((resolve) => { process.nextTick(resolve); });
+
+        // finally _remove should have been called
+        expect(immortal._remove).toHaveBeenCalledTimes(1);
+
+        await Promise.all([getPromise, setPromise, removePromise]);
+    });
 });
 
 describe('constructor', () => {
@@ -277,9 +519,9 @@ describe('constructor', () => {
         const immortal = new ImmortalStorage(
             stores.map(toAsyncConstructor),
         );
-        expect(immortal.stores).toHaveLength(0);
+        expect(immortal._stores).toHaveLength(0);
         await immortal.onReady;
-        expect(immortal.stores).toEqual(expect.arrayContaining(stores));
+        expect(immortal._stores).toEqual(expect.arrayContaining(stores));
     });
     test('should construct with store classes and instances mixed', async () => {
         const stores = [
@@ -291,7 +533,7 @@ describe('constructor', () => {
             stores[1],
         ]);
         await immortal.onReady;
-        expect(immortal.stores).toEqual(expect.arrayContaining(stores));
+        expect(immortal._stores).toEqual(expect.arrayContaining(stores));
     });
     test('should construct even if some store fails', async () => {
         const stores = [
@@ -303,7 +545,7 @@ describe('constructor', () => {
             toAsyncConstructor(new Error(errorMessage)),
         ]);
         await immortal.onReady;
-        expect(immortal.stores).toEqual(expect.arrayContaining(stores));
+        expect(immortal._stores).toEqual(expect.arrayContaining(stores));
     });
     test('should reject when all stores fail', async () => {
         const immortal = new ImmortalStorage([
@@ -312,16 +554,16 @@ describe('constructor', () => {
             undefined,
         ]);
         await expect(immortal.onReady).rejects.toThrow('Unable');
-        expect(immortal.stores).toHaveLength(0);
+        expect(immortal._stores).toHaveLength(0);
     });
     test('should fallback to the default key-prefix when a nullish value is passed as 2nd arg', async () => {
         const immortal1 = new ImmortalStorage([goodStoreFactory(correctValue)], undefined);
-        expect(immortal1.keyPrefix).toBe(DEFAULT_KEY_PREFIX);
+        expect(immortal1._keyPrefix).toBe(DEFAULT_KEY_PREFIX);
         const immortal2 = new ImmortalStorage([goodStoreFactory(correctValue)], null);
-        expect(immortal2.keyPrefix).toBe(DEFAULT_KEY_PREFIX);
+        expect(immortal2._keyPrefix).toBe(DEFAULT_KEY_PREFIX);
     });
     test('should accept key-prefix argument when it is not nullish', async () => {
         const immortal = new ImmortalStorage([goodStoreFactory(correctValue)], '');
-        expect(immortal.keyPrefix).toBe('');
+        expect(immortal._keyPrefix).toBe('');
     });
 });
