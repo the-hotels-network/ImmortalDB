@@ -16,7 +16,7 @@ const REJECTED = 'rejected';
 
 const identity = (value) => value;
 
-export class ImmortalStorage {
+export class ImmortalStorage extends EventTarget {
 
     constructor(
         stores = DEFAULT_STORES,
@@ -25,11 +25,13 @@ export class ImmortalStorage {
         encoder = identity,
         decoder = identity,
     ) {
-        this.encoder = encoder || identity;
-        this.decoder = decoder || identity;
-        this.defaultValue = defaultValue;
-        this.keyPrefix = keyPrefix ?? DEFAULT_KEY_PREFIX;
-        this.stores = [];
+        super();
+        this._encoder = encoder || identity;
+        this._decoder = decoder || identity;
+        this._defaultValue = defaultValue;
+        this._keyPrefix = keyPrefix ?? DEFAULT_KEY_PREFIX;
+        this._stores = [];
+        this._locks = new Map();
         this.onReady = (async () => {
             const results = await Promise.allSettled(stores.map((StoreClassOrInstance) => {
                 if (typeof StoreClassOrInstance !== 'function') {
@@ -41,11 +43,11 @@ export class ImmortalStorage {
                     return Promise.reject(error);
                 }
             }));
-            this.stores = results
+            this._stores = results
                 .filter((result) => result.status === FULFILLED)
                 .map((result) => result.value)
                 .filter((store) => store);
-            if (this.stores.length === 0) {
+            if (this._stores.length === 0) {
                 return Promise.reject(new Error('Unable to construct any store'));
             }
             return Promise.resolve();
@@ -59,7 +61,7 @@ export class ImmortalStorage {
             .map((result) => result.reason instanceof Error ? result.reason.message : String(result.reason));
 
         if (reasons.length > 0) {
-            const all = this.stores.length === reasons.length;
+            const all = this._stores.length === reasons.length;
             const errorMessage = [
                 `${all ? 'All' : 'Some'} stores failed to ${operation}(). Store errors:`,
                 ...reasons.map(reason => `    * "${reason}"`),
@@ -71,17 +73,56 @@ export class ImmortalStorage {
         return undefined;
     }
 
-    prefix(value) {
-        return `${this.keyPrefix}${value}`;
+    async _lock(key) {
+        if (!this._acquireLock(key)) {
+            return new Promise((resolve) => {
+                this.addEventListener(key, function unlockHandler() {
+                    if (this._acquireLock(key)) {
+                        this.removeEventListener(key, unlockHandler);
+                        resolve();
+                    }
+                });
+            });
+        }
     }
 
-    async get(key, _default = this.defaultValue) {
+    async _unlock(key) {
+        this._locks.delete(key);
+        this.dispatchEvent(new Event(key));
+    }
+
+    _prefix(value) {
+        return `${this._keyPrefix}${value}`;
+    }
+
+    _acquireLock(key) {
+        if (!this._locks.has(key)) {
+            this._locks.set(key, true);
+            return true;
+        }
+        return false;
+    }
+
+    async get(key, _default = this._defaultValue) {
+        await this._lock(key);
+        try {
+            const result = await this._get(key, _default);
+            await this._unlock(key);
+            return result;
+        } catch (reason) {
+            await this._unlock(key);
+            throw reason;
+        }
+    }
+
+    async _get(key, _default = this._defaultValue) {
         await this.onReady;
 
-        const prefixedKey = this.prefix(key);
+        const prefixedKey = this._prefix(key);
+
 
         const results = await Promise.allSettled(
-            this.stores.map((store) => store.get(prefixedKey))
+            this._stores.map((store) => store.get(prefixedKey))
         );
 
         const values = results
@@ -97,7 +138,7 @@ export class ImmortalStorage {
         if (validated.length === 0) {
             const error = this._createErrorFromSettledPromises(results, 'get');
             if (!error) {
-                await this.remove(key);
+                await this._remove(key);
             }
 
             return _default;
@@ -107,13 +148,13 @@ export class ImmortalStorage {
         let decodedValue;
 
         try {
-            decodedValue = await this.decoder(value);
+            decodedValue = await this._decoder(value);
         } catch (_) {
             throw new ImmortalDecoderError();
         }
 
         try {
-            await this.set(key, decodedValue);
+            await this._set(key, decodedValue);
         } catch (error) {
             if (error instanceof ImmortalEncoderError) {
                 throw error;
@@ -124,13 +165,25 @@ export class ImmortalStorage {
     }
 
     async set(key, value) {
+        await this._lock(key);
+        try {
+            const result = await this._set(key, value);
+            await this._unlock(key);
+            return result;
+        } catch (reason) {
+            await this._unlock(key);
+            throw reason;
+        }
+    }
+
+    async _set(key, value) {
         await this.onReady;
 
-        const prefixedKey = this.prefix(key);
+        const prefixedKey = this._prefix(key);
         let encodedValue;
 
         try {
-            encodedValue = await this.encoder(value);
+            encodedValue = await this._encoder(value);
         } catch (_) {
             throw new ImmortalEncoderError();
         }
@@ -140,7 +193,7 @@ export class ImmortalStorage {
         }
 
         const results = await Promise.allSettled(
-            this.stores.map((store) => store.set(prefixedKey, encodedValue)),
+            this._stores.map((store) => store.set(prefixedKey, encodedValue)),
         );
 
         const error = this._createErrorFromSettledPromises(results, 'set');
@@ -149,7 +202,7 @@ export class ImmortalStorage {
         }
 
         const integrityCheckResults = await Promise.allSettled(
-            this.stores.map((store) => store.get(prefixedKey).then((storedEncodedValue) => {
+            this._stores.map((store) => store.get(prefixedKey).then((storedEncodedValue) => {
                 if (storedEncodedValue && storedEncodedValue !== 'undefined' && storedEncodedValue !== encodedValue) {
                     return Promise.reject(new Error('Integrity check failed'));
                 }
@@ -165,12 +218,24 @@ export class ImmortalStorage {
     }
 
     async remove(key) {
+        await this._lock(key);
+        try {
+            const result = await this._remove(key);
+            await this._unlock(key);
+            return result;
+        } catch (reason) {
+            await this._unlock(key);
+            throw reason;
+        }
+    }
+
+    async _remove(key) {
         await this.onReady;
 
-        const prefixedKey = this.prefix(key);
+        const prefixedKey = this._prefix(key);
 
         const results = await Promise.allSettled(
-            this.stores.map((store) => store.remove(prefixedKey)),
+            this._stores.map((store) => store.remove(prefixedKey)),
         );
 
         const error = this._createErrorFromSettledPromises(results, 'remove');
@@ -178,6 +243,6 @@ export class ImmortalStorage {
             throw error;
         }
 
-        return this.defaultValue;
+        return this._defaultValue;
     }
 }
