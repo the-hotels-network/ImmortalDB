@@ -1,0 +1,9 @@
+# These owners will be the default owners for everything in
+# the target repo. The following users will be requested for
+# review when someone opens a pull request.
+
+* @the-hotels-network/agent
+
+# *********************************************************************
+# (c) The Hotels Network
+# *********************************************************************
