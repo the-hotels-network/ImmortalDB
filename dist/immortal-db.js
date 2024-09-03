@@ -9,221 +9,11 @@
 		root["ImmortalDB"] = factory();
 })(self, () => {
 return /******/ (() => { // webpackBootstrap
-/******/ 	var __webpack_modules__ = ({
-
-/***/ 808:
-/***/ ((module, exports, __webpack_require__) => {
-
-var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
- * JavaScript Cookie v2.2.1
- * https://github.com/js-cookie/js-cookie
- *
- * Copyright 2006, 2015 Klaus Hartl & Fagner Brack
- * Released under the MIT license
- */
-;(function (factory) {
-	var registeredInModuleLoader;
-	if (true) {
-		!(__WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
-		__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
-		(__WEBPACK_AMD_DEFINE_FACTORY__.call(exports, __webpack_require__, exports, module)) :
-		__WEBPACK_AMD_DEFINE_FACTORY__),
-		__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-		registeredInModuleLoader = true;
-	}
-	if (true) {
-		module.exports = factory();
-		registeredInModuleLoader = true;
-	}
-	if (!registeredInModuleLoader) {
-		var OldCookies = window.Cookies;
-		var api = window.Cookies = factory();
-		api.noConflict = function () {
-			window.Cookies = OldCookies;
-			return api;
-		};
-	}
-}(function () {
-	function extend () {
-		var i = 0;
-		var result = {};
-		for (; i < arguments.length; i++) {
-			var attributes = arguments[ i ];
-			for (var key in attributes) {
-				result[key] = attributes[key];
-			}
-		}
-		return result;
-	}
-
-	function decode (s) {
-		return s.replace(/(%[0-9A-Z]{2})+/g, decodeURIComponent);
-	}
-
-	function init (converter) {
-		function api() {}
-
-		function set (key, value, attributes) {
-			if (typeof document === 'undefined') {
-				return;
-			}
-
-			attributes = extend({
-				path: '/'
-			}, api.defaults, attributes);
-
-			if (typeof attributes.expires === 'number') {
-				attributes.expires = new Date(new Date() * 1 + attributes.expires * 864e+5);
-			}
-
-			// We're using "expires" because "max-age" is not supported by IE
-			attributes.expires = attributes.expires ? attributes.expires.toUTCString() : '';
-
-			try {
-				var result = JSON.stringify(value);
-				if (/^[\{\[]/.test(result)) {
-					value = result;
-				}
-			} catch (e) {}
-
-			value = converter.write ?
-				converter.write(value, key) :
-				encodeURIComponent(String(value))
-					.replace(/%(23|24|26|2B|3A|3C|3E|3D|2F|3F|40|5B|5D|5E|60|7B|7D|7C)/g, decodeURIComponent);
-
-			key = encodeURIComponent(String(key))
-				.replace(/%(23|24|26|2B|5E|60|7C)/g, decodeURIComponent)
-				.replace(/[\(\)]/g, escape);
-
-			var stringifiedAttributes = '';
-			for (var attributeName in attributes) {
-				if (!attributes[attributeName]) {
-					continue;
-				}
-				stringifiedAttributes += '; ' + attributeName;
-				if (attributes[attributeName] === true) {
-					continue;
-				}
-
-				// Considers RFC 6265 section 5.2:
-				// ...
-				// 3.  If the remaining unparsed-attributes contains a %x3B (";")
-				//     character:
-				// Consume the characters of the unparsed-attributes up to,
-				// not including, the first %x3B (";") character.
-				// ...
-				stringifiedAttributes += '=' + attributes[attributeName].split(';')[0];
-			}
-
-			return (document.cookie = key + '=' + value + stringifiedAttributes);
-		}
-
-		function get (key, json) {
-			if (typeof document === 'undefined') {
-				return;
-			}
-
-			var jar = {};
-			// To prevent the for loop in the first place assign an empty array
-			// in case there are no cookies at all.
-			var cookies = document.cookie ? document.cookie.split('; ') : [];
-			var i = 0;
-
-			for (; i < cookies.length; i++) {
-				var parts = cookies[i].split('=');
-				var cookie = parts.slice(1).join('=');
-
-				if (!json && cookie.charAt(0) === '"') {
-					cookie = cookie.slice(1, -1);
-				}
-
-				try {
-					var name = decode(parts[0]);
-					cookie = (converter.read || converter)(cookie, name) ||
-						decode(cookie);
-
-					if (json) {
-						try {
-							cookie = JSON.parse(cookie);
-						} catch (e) {}
-					}
-
-					jar[name] = cookie;
-
-					if (key === name) {
-						break;
-					}
-				} catch (e) {}
-			}
-
-			return key ? jar[key] : jar;
-		}
-
-		api.set = set;
-		api.get = function (key) {
-			return get(key, false /* read as raw */);
-		};
-		api.getJSON = function (key) {
-			return get(key, true /* read as json */);
-		};
-		api.remove = function (key, attributes) {
-			set(key, '', extend(attributes, {
-				expires: -1
-			}));
-		};
-
-		api.defaults = {};
-
-		api.withConverter = init;
-
-		return api;
-	}
-
-	return init(function () {});
-}));
-
-
-/***/ })
-
-/******/ 	});
-/************************************************************************/
-/******/ 	// The module cache
-/******/ 	var __webpack_module_cache__ = {};
-/******/ 	
-/******/ 	// The require function
-/******/ 	function __webpack_require__(moduleId) {
-/******/ 		// Check if module is in cache
-/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
-/******/ 		if (cachedModule !== undefined) {
-/******/ 			return cachedModule.exports;
-/******/ 		}
-/******/ 		// Create a new module (and put it into the cache)
-/******/ 		var module = __webpack_module_cache__[moduleId] = {
-/******/ 			// no module.id needed
-/******/ 			// no module.loaded needed
-/******/ 			exports: {}
-/******/ 		};
-/******/ 	
-/******/ 		// Execute the module function
-/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
-/******/ 	
-/******/ 		// Return the exports of the module
-/******/ 		return module.exports;
-/******/ 	}
+/******/ 	"use strict";
+/******/ 	// The require scope
+/******/ 	var __webpack_require__ = {};
 /******/ 	
 /************************************************************************/
-/******/ 	/* webpack/runtime/compat get default export */
-/******/ 	(() => {
-/******/ 		// getDefaultExport function for compatibility with non-harmony modules
-/******/ 		__webpack_require__.n = (module) => {
-/******/ 			var getter = module && module.__esModule ?
-/******/ 				() => (module['default']) :
-/******/ 				() => (module);
-/******/ 			__webpack_require__.d(getter, { a: getter });
-/******/ 			return getter;
-/******/ 		};
-/******/ 	})();
-/******/ 	
 /******/ 	/* webpack/runtime/define property getters */
 /******/ 	(() => {
 /******/ 		// define getter functions for harmony exports
@@ -266,29 +56,26 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
 /******/ 	
 /************************************************************************/
 var __webpack_exports__ = {};
-// This entry need to be wrapped in an IIFE because it need to be in strict mode.
-(() => {
-"use strict";
 // ESM COMPAT FLAG
 __webpack_require__.r(__webpack_exports__);
 
 // EXPORTS
 __webpack_require__.d(__webpack_exports__, {
-  "CookieStore": () => (/* reexport */ CookieStore),
-  "DEFAULT_DATABASE_NAME": () => (/* reexport */ DEFAULT_DATABASE_NAME),
-  "DEFAULT_KEY_PREFIX": () => (/* reexport */ DEFAULT_KEY_PREFIX),
-  "DEFAULT_STORES": () => (/* reexport */ DEFAULT_STORES),
-  "DEFAULT_STORE_NAME": () => (/* reexport */ DEFAULT_STORE_NAME),
-  "DEFAULT_VALUE": () => (/* reexport */ DEFAULT_VALUE),
-  "ImmortalDecoderError": () => (/* reexport */ ImmortalDecoderError),
-  "ImmortalEncoderError": () => (/* reexport */ ImmortalEncoderError),
-  "ImmortalError": () => (/* reexport */ ImmortalError),
-  "ImmortalStorage": () => (/* reexport */ ImmortalStorage),
-  "ImmortalStoresPartialError": () => (/* reexport */ ImmortalStoresPartialError),
-  "ImmortalStoresTotalError": () => (/* reexport */ ImmortalStoresTotalError),
-  "IndexedDbStore": () => (/* reexport */ IndexedDbStore),
-  "LocalStorageStore": () => (/* reexport */ LocalStorageStore),
-  "SessionStorageStore": () => (/* reexport */ SessionStorageStore)
+  CookieStore: () => (/* reexport */ CookieStore),
+  DEFAULT_DATABASE_NAME: () => (/* reexport */ DEFAULT_DATABASE_NAME),
+  DEFAULT_KEY_PREFIX: () => (/* reexport */ DEFAULT_KEY_PREFIX),
+  DEFAULT_STORES: () => (/* reexport */ DEFAULT_STORES),
+  DEFAULT_STORE_NAME: () => (/* reexport */ DEFAULT_STORE_NAME),
+  DEFAULT_VALUE: () => (/* reexport */ DEFAULT_VALUE),
+  ImmortalDecoderError: () => (/* reexport */ ImmortalDecoderError),
+  ImmortalEncoderError: () => (/* reexport */ ImmortalEncoderError),
+  ImmortalError: () => (/* reexport */ ImmortalError),
+  ImmortalStorage: () => (/* reexport */ ImmortalStorage),
+  ImmortalStoresPartialError: () => (/* reexport */ ImmortalStoresPartialError),
+  ImmortalStoresTotalError: () => (/* reexport */ ImmortalStoresTotalError),
+  IndexedDbStore: () => (/* reexport */ IndexedDbStore),
+  LocalStorageStore: () => (/* reexport */ LocalStorageStore),
+  SessionStorageStore: () => (/* reexport */ SessionStorageStore)
 });
 
 ;// CONCATENATED MODULE: ./src/errors/immortal-error.js
@@ -297,7 +84,6 @@ class ImmortalError extends Error {
     super(message);
     this.name = 'ImmortalError';
   }
-
 }
 ;// CONCATENATED MODULE: ./src/errors/immortal-encoder-error.js
 
@@ -306,7 +92,6 @@ class ImmortalEncoderError extends ImmortalError {
     super(message);
     this.name = 'ImmortalEncoderError';
   }
-
 }
 ;// CONCATENATED MODULE: ./src/errors/immortal-decoder-error.js
 
@@ -315,7 +100,6 @@ class ImmortalDecoderError extends ImmortalError {
     super(message);
     this.name = 'ImmortalDecoderError';
   }
-
 }
 ;// CONCATENATED MODULE: ./src/errors/immortal-stores-partial-error.js
 
@@ -324,7 +108,6 @@ class ImmortalStoresPartialError extends ImmortalError {
     super(message);
     this.name = 'ImmortalStoresPartialError';
   }
-
 }
 ;// CONCATENATED MODULE: ./src/errors/immortal-stores-total-error.js
 
@@ -333,7 +116,6 @@ class ImmortalStoresTotalError extends ImmortalError {
     super(message);
     this.name = 'ImmortalStoresTotalError';
   }
-
 }
 ;// CONCATENATED MODULE: ./src/errors/index.js
 
@@ -341,9 +123,142 @@ class ImmortalStoresTotalError extends ImmortalError {
 
 
 
-// EXTERNAL MODULE: ./node_modules/js-cookie/src/js.cookie.js
-var js_cookie = __webpack_require__(808);
-var js_cookie_default = /*#__PURE__*/__webpack_require__.n(js_cookie);
+;// CONCATENATED MODULE: ./node_modules/js-cookie/dist/js.cookie.mjs
+/*! js-cookie v3.0.5 | MIT */
+/* eslint-disable no-var */
+function js_cookie_assign (target) {
+  for (var i = 1; i < arguments.length; i++) {
+    var source = arguments[i];
+    for (var key in source) {
+      target[key] = source[key];
+    }
+  }
+  return target
+}
+/* eslint-enable no-var */
+
+/* eslint-disable no-var */
+var defaultConverter = {
+  read: function (value) {
+    if (value[0] === '"') {
+      value = value.slice(1, -1);
+    }
+    return value.replace(/(%[\dA-F]{2})+/gi, decodeURIComponent)
+  },
+  write: function (value) {
+    return encodeURIComponent(value).replace(
+      /%(2[346BF]|3[AC-F]|40|5[BDE]|60|7[BCD])/g,
+      decodeURIComponent
+    )
+  }
+};
+/* eslint-enable no-var */
+
+/* eslint-disable no-var */
+
+function init (converter, defaultAttributes) {
+  function set (name, value, attributes) {
+    if (typeof document === 'undefined') {
+      return
+    }
+
+    attributes = js_cookie_assign({}, defaultAttributes, attributes);
+
+    if (typeof attributes.expires === 'number') {
+      attributes.expires = new Date(Date.now() + attributes.expires * 864e5);
+    }
+    if (attributes.expires) {
+      attributes.expires = attributes.expires.toUTCString();
+    }
+
+    name = encodeURIComponent(name)
+      .replace(/%(2[346B]|5E|60|7C)/g, decodeURIComponent)
+      .replace(/[()]/g, escape);
+
+    var stringifiedAttributes = '';
+    for (var attributeName in attributes) {
+      if (!attributes[attributeName]) {
+        continue
+      }
+
+      stringifiedAttributes += '; ' + attributeName;
+
+      if (attributes[attributeName] === true) {
+        continue
+      }
+
+      // Considers RFC 6265 section 5.2:
+      // ...
+      // 3.  If the remaining unparsed-attributes contains a %x3B (";")
+      //     character:
+      // Consume the characters of the unparsed-attributes up to,
+      // not including, the first %x3B (";") character.
+      // ...
+      stringifiedAttributes += '=' + attributes[attributeName].split(';')[0];
+    }
+
+    return (document.cookie =
+      name + '=' + converter.write(value, name) + stringifiedAttributes)
+  }
+
+  function get (name) {
+    if (typeof document === 'undefined' || (arguments.length && !name)) {
+      return
+    }
+
+    // To prevent the for loop in the first place assign an empty array
+    // in case there are no cookies at all.
+    var cookies = document.cookie ? document.cookie.split('; ') : [];
+    var jar = {};
+    for (var i = 0; i < cookies.length; i++) {
+      var parts = cookies[i].split('=');
+      var value = parts.slice(1).join('=');
+
+      try {
+        var found = decodeURIComponent(parts[0]);
+        jar[found] = converter.read(value, found);
+
+        if (name === found) {
+          break
+        }
+      } catch (e) {}
+    }
+
+    return name ? jar[name] : jar
+  }
+
+  return Object.create(
+    {
+      set,
+      get,
+      remove: function (name, attributes) {
+        set(
+          name,
+          '',
+          js_cookie_assign({}, attributes, {
+            expires: -1
+          })
+        );
+      },
+      withAttributes: function (attributes) {
+        return init(this.converter, js_cookie_assign({}, this.attributes, attributes))
+      },
+      withConverter: function (converter) {
+        return init(js_cookie_assign({}, this.converter, converter), this.attributes)
+      }
+    },
+    {
+      attributes: { value: Object.freeze(defaultAttributes) },
+      converter: { value: Object.freeze(converter) }
+    }
+  )
+}
+
+var api = init(defaultConverter, { path: '/' });
+/* eslint-enable no-var */
+
+
+
 ;// CONCATENATED MODULE: ./src/cookie-store.js
 //
 // ImmortalDB - A resilient key-value store for browsers.
@@ -355,17 +270,16 @@ var js_cookie_default = /*#__PURE__*/__webpack_require__.n(js_cookie);
 // License: MIT
 //
 
+
 const DEFAULT_COOKIE_TTL = 365; // Days.
 // If this script is executing in a cross-origin iframe, the cookie must
 // be set with SameSite=None and Secure=true. See
 // https://web.dev/samesite-cookies-explained/ and
 // https://tools.ietf.org/html/draft-west-cookie-incrementalism-00 for
 // details on SameSite and cross-origin behavior.
-
 const CROSS_ORIGIN_IFRAME = amIInsideACrossOriginIframe();
 const DEFAULT_SECURE = !!CROSS_ORIGIN_IFRAME;
 const DEFAULT_SAMESITE = CROSS_ORIGIN_IFRAME ? 'None' : 'Lax';
-
 function amIInsideACrossOriginIframe() {
   try {
     // Raises ReferenceError if window isn't defined, eg if executed
@@ -379,7 +293,6 @@ function amIInsideACrossOriginIframe() {
     return true;
   }
 }
-
 class CookieStore {
   constructor({
     ttl = DEFAULT_COOKIE_TTL,
@@ -391,20 +304,16 @@ class CookieStore {
     this.sameSite = sameSite;
     return (async () => this)();
   }
-
   async get(key) {
-    const value = js_cookie_default().get(key);
+    const value = api.get(key);
     return typeof value === 'string' ? value : undefined;
   }
-
   async set(key, value) {
-    js_cookie_default().set(key, value, this._constructCookieParams());
+    api.set(key, value, this._constructCookieParams());
   }
-
   async remove(key) {
-    js_cookie_default().remove(key, this._constructCookieParams());
+    api.remove(key, this._constructCookieParams());
   }
-
   _constructCookieParams() {
     return {
       expires: this.ttl,
@@ -412,9 +321,7 @@ class CookieStore {
       sameSite: this.sameSite
     };
   }
-
 }
-
 
 ;// CONCATENATED MODULE: ./src/helpers.js
 /**
@@ -428,31 +335,25 @@ function countUniques(iterable) {
       nullishCount += 1;
       return;
     }
-
     const amount = counter[el] || 0;
     counter[el] = amount + 1;
   });
   const result = Object.entries(counter);
-
   if (nullishCount) {
     result.push([undefined, nullishCount]);
   }
-
   return result;
 }
 function getGlobal() {
   if (typeof self !== 'undefined') {
     return self;
   }
-
   if (typeof window !== 'undefined') {
     return window;
   }
-
   if (typeof __webpack_require__.g !== 'undefined') {
     return __webpack_require__.g;
   }
-
   throw new Error('unable to locate global object');
 }
 ;// CONCATENATED MODULE: ./node_modules/idb-keyval/dist/idb-keyval.mjs
@@ -532,9 +433,9 @@ function keys(store = getDefaultStore()) {
 // License: MIT
 //
 
+
 const DEFAULT_DATABASE_NAME = 'ImmortalDB';
 const DEFAULT_STORE_NAME = 'key-value-pairs';
-
 class IndexedDbStore {
   constructor(dbName = DEFAULT_DATABASE_NAME, storeName = DEFAULT_STORE_NAME) {
     this.store = new Store(dbName, storeName);
@@ -554,29 +455,22 @@ class IndexedDbStore {
         if (err.name === 'SecurityError') {
           return null; // Failed to open an IndexedDB database.
         }
-
         throw err;
       }
-
       return this;
     })();
   }
-
   async get(key) {
     const value = await get(key, this.store);
     return typeof value === 'string' ? value : undefined;
   }
-
   async set(key, value) {
     await set(key, value, this.store);
   }
-
   async remove(key) {
     await del(key, this.store);
   }
-
 }
-
 
 ;// CONCATENATED MODULE: ./src/web-storage.js
 //
@@ -588,41 +482,33 @@ class IndexedDbStore {
 //
 // License: MIT
 //
+
 class StorageApiWrapper {
   constructor(store) {
     this.store = store;
     return (async () => this)();
   }
-
   async get(key) {
     const value = this.store.getItem(key);
     return typeof value === 'string' ? value : undefined;
   }
-
   async set(key, value) {
     this.store.setItem(key, value);
   }
-
   async remove(key) {
     this.store.removeItem(key);
   }
-
 }
-
 class LocalStorageStore extends StorageApiWrapper {
   constructor() {
     super(window.localStorage);
   }
-
 }
-
 class SessionStorageStore extends StorageApiWrapper {
   constructor() {
     super(window.sessionStorage);
   }
-
 }
-
 
 ;// CONCATENATED MODULE: ./src/defaults.js
 
@@ -632,14 +518,12 @@ class SessionStorageStore extends StorageApiWrapper {
 const DEFAULT_VALUE = undefined;
 const DEFAULT_KEY_PREFIX = '_immortal|';
 const DEFAULT_STORES = [CookieStore];
-const defaults_window = getGlobal();
-
+const defaults_window = /* #__PURE__ */getGlobal();
 try {
   if (defaults_window && defaults_window.indexedDB) {
     DEFAULT_STORES.push(IndexedDbStore);
   }
 } catch (err) {}
-
 try {
   if (defaults_window && defaults_window.localStorage) {
     DEFAULT_STORES.push(LocalStorageStore);
@@ -651,9 +535,7 @@ try {
 
 const FULFILLED = 'fulfilled';
 const REJECTED = 'rejected';
-
 const identity = value => value;
-
 class ImmortalStorage extends EventTarget {
   constructor(stores = DEFAULT_STORES, keyPrefix = DEFAULT_KEY_PREFIX, defaultValue = DEFAULT_VALUE, encoder = identity, decoder = identity) {
     super();
@@ -663,13 +545,11 @@ class ImmortalStorage extends EventTarget {
     this._keyPrefix = keyPrefix ?? DEFAULT_KEY_PREFIX;
     this._stores = [];
     this._locks = new Map();
-
     this.onReady = (async () => {
       const results = await Promise.allSettled(stores.map(StoreClassOrInstance => {
         if (typeof StoreClassOrInstance !== 'function') {
           return StoreClassOrInstance;
         }
-
         try {
           return new StoreClassOrInstance();
         } catch (error) {
@@ -677,28 +557,22 @@ class ImmortalStorage extends EventTarget {
         }
       }));
       this._stores = results.filter(result => result.status === FULFILLED).map(result => result.value).filter(store => store);
-
       if (this._stores.length === 0) {
         return Promise.reject(new Error('Unable to construct any store'));
       }
-
       return Promise.resolve();
     })();
   }
-
   _createErrorFromSettledPromises(settledPromises, operation) {
     const reasons = settledPromises.filter(result => result.status === REJECTED).map(result => result.reason instanceof Error ? result.reason.message : String(result.reason));
-
     if (reasons.length > 0) {
       const all = this._stores.length === reasons.length;
       const errorMessage = [`${all ? 'All' : 'Some'} stores failed to ${operation}(). Store errors:`, ...reasons.map(reason => `    * "${reason}"`)].join('\n');
       const ActualError = all ? ImmortalStoresTotalError : ImmortalStoresPartialError;
       return new ActualError(errorMessage);
     }
-
     return undefined;
   }
-
   async _lock(key) {
     if (!this._acquireLock(key)) {
       return new Promise(resolve => {
@@ -711,30 +585,22 @@ class ImmortalStorage extends EventTarget {
       });
     }
   }
-
   async _unlock(key) {
     this._locks.delete(key);
-
     this.dispatchEvent(new Event(key));
   }
-
   _prefix(value) {
     return `${this._keyPrefix}${value}`;
   }
-
   _acquireLock(key) {
     if (!this._locks.has(key)) {
       this._locks.set(key, true);
-
       return true;
     }
-
     return false;
   }
-
   async get(key, _default = this._defaultValue) {
     await this._lock(key);
-
     try {
       const result = await this._get(key, _default);
       await this._unlock(key);
@@ -744,37 +610,28 @@ class ImmortalStorage extends EventTarget {
       throw reason;
     }
   }
-
   async _get(key, _default = this._defaultValue) {
     await this.onReady;
-
     const prefixedKey = this._prefix(key);
-
     const results = await Promise.allSettled(this._stores.map(store => store.get(prefixedKey)));
     const values = results.filter(result => result.status === FULFILLED).map(result => result.value);
     const counted = countUniques(values);
     counted.sort((a, b) => a[1] <= b[1]);
     const validated = counted.filter(([value]) => value !== undefined && value !== 'undefined');
-
     if (validated.length === 0) {
       const error = this._createErrorFromSettledPromises(results, 'get');
-
       if (!error) {
         await this._remove(key);
       }
-
       return _default;
     }
-
     const [value] = validated[0];
     let decodedValue;
-
     try {
       decodedValue = await this._decoder(value);
     } catch (_) {
       throw new ImmortalDecoderError();
     }
-
     try {
       await this._set(key, decodedValue);
     } catch (error) {
@@ -782,13 +639,10 @@ class ImmortalStorage extends EventTarget {
         throw error;
       }
     }
-
     return decodedValue;
   }
-
   async set(key, value) {
     await this._lock(key);
-
     try {
       const result = await this._set(key, value);
       await this._unlock(key);
@@ -798,50 +652,36 @@ class ImmortalStorage extends EventTarget {
       throw reason;
     }
   }
-
   async _set(key, value) {
     await this.onReady;
-
     const prefixedKey = this._prefix(key);
-
     let encodedValue;
-
     try {
       encodedValue = await this._encoder(value);
     } catch (_) {
       throw new ImmortalEncoderError();
     }
-
     if (encodedValue === undefined || encodedValue === 'undefined') {
       throw new ImmortalEncoderError('Unable to store encoded value "undefined"');
     }
-
     const results = await Promise.allSettled(this._stores.map(store => store.set(prefixedKey, encodedValue)));
-
     const error = this._createErrorFromSettledPromises(results, 'set');
-
     if (error) {
       throw error;
     }
-
     const integrityCheckResults = await Promise.allSettled(this._stores.map(store => store.get(prefixedKey).then(storedEncodedValue => {
       if (storedEncodedValue && storedEncodedValue !== 'undefined' && storedEncodedValue !== encodedValue) {
         return Promise.reject(new Error('Integrity check failed'));
       }
     })));
-
     const integrityError = this._createErrorFromSettledPromises(integrityCheckResults, 'set');
-
     if (integrityError) {
       throw integrityError;
     }
-
     return value;
   }
-
   async remove(key) {
     await this._lock(key);
-
     try {
       const result = await this._remove(key);
       await this._unlock(key);
@@ -851,23 +691,16 @@ class ImmortalStorage extends EventTarget {
       throw reason;
     }
   }
-
   async _remove(key) {
     await this.onReady;
-
     const prefixedKey = this._prefix(key);
-
     const results = await Promise.allSettled(this._stores.map(store => store.remove(prefixedKey)));
-
     const error = this._createErrorFromSettledPromises(results, 'remove');
-
     if (error) {
       throw error;
     }
-
     return this._defaultValue;
   }
-
 }
 ;// CONCATENATED MODULE: ./src/index.js
 //
@@ -885,7 +718,6 @@ class ImmortalStorage extends EventTarget {
 
 
 
-})();
 
 /******/ 	return __webpack_exports__;
 /******/ })()
