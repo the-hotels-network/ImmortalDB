@@ -514,10 +514,9 @@ class SessionStorageStore extends StorageApiWrapper {
 
 
 
-
 const DEFAULT_VALUE = undefined;
 const DEFAULT_KEY_PREFIX = '_immortal|';
-const DEFAULT_STORES = [CookieStore];
+const DEFAULT_STORES = [];
 const defaults_window = /* #__PURE__ */getGlobal();
 try {
   if (defaults_window && defaults_window.indexedDB) {
