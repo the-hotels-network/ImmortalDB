@@ -7,7 +7,7 @@ export const DEFAULT_VALUE = undefined;
 export const DEFAULT_KEY_PREFIX = '_immortal|';
 export const DEFAULT_STORES = [CookieStore];
 
-const window = getGlobal();
+const window = /* #__PURE__ */ getGlobal();
 
 try {
     if (window && window.indexedDB) {
