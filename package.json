@@ -1,7 +1,7 @@
 {
   "name": "@thehotelsnetwork/immortal-db",
   "private": false,
-  "version": "4.0.0",
+  "version": "4.0.1",
   "main": "dist/immortal-db.js",
   "module": "src/index.js",
   "types": "immortal-db.d.ts",
@@ -40,5 +40,10 @@
   "volta": {
     "node": "16.16.0",
     "npm": "8.16.0"
-  }
+  },
+  "files": [
+    "dist",
+    "src",
+    "immortal-db.d.ts"
+  ]
 }
